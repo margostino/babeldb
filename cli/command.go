@@ -9,7 +9,7 @@ type Command struct {
 
 func isValidCommand(command string) bool {
 	// TODO
-	return true && command != ""
+	return true
 }
 
 func newCommands() []*Command {
@@ -28,7 +28,7 @@ func newCommands() []*Command {
 		},
 		{
 			id:          "create-source",
-			pattern:     "^create source [a-zA-Z0-9_]+$",
+			pattern:     "^create source [a-zA-Z0-9_ .=\"\\/*]+$",
 			function:    createSource,
 			description: "List commands available",
 		},
