@@ -3,7 +3,7 @@ package cli
 type Command struct {
 	id          string
 	pattern     string
-	function    func()
+	function    func(interface{})
 	description string
 }
 
@@ -24,6 +24,12 @@ func newCommands() []*Command {
 			id:          "help",
 			pattern:     "help",
 			function:    help,
+			description: "List commands available",
+		},
+		{
+			id:          "create-source",
+			pattern:     "^create source [a-zA-Z0-9_]+$",
+			function:    createSource,
 			description: "List commands available",
 		},
 	}
