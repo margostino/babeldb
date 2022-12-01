@@ -7,19 +7,24 @@ type Command struct {
 	description string
 }
 
-func newCommands() []*Command {
-	exitCommand := &Command{
-		id:          "exit",
-		pattern:     "exit",
-		function:    exit,
-		description: "Exit BabelDB CLI",
-	}
-	return []*Command{
-		exitCommand,
-	}
-}
-
 func isValidCommand(command string) bool {
 	// TODO
 	return true && command != ""
+}
+
+func newCommands() []*Command {
+	return []*Command{
+		{
+			id:          "exit",
+			pattern:     "exit",
+			function:    exit,
+			description: "Exit BabelDB CLI",
+		},
+		{
+			id:          "help",
+			pattern:     "help",
+			function:    help,
+			description: "List commands available",
+		},
+	}
 }

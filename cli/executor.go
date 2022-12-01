@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"github.com/c-bata/go-prompt"
 	"github.com/margostino/babeldb/common"
 	"regexp"
 )
@@ -34,4 +35,16 @@ func (e *Executor) lookup(input string) (*Command, error) {
 		}
 	}
 	return nil, errors.New(fmt.Sprintf("command not found for input [%s]", input))
+}
+
+func (e *Executor) newSuggestions() []prompt.Suggest {
+	var suggestions = make([]prompt.Suggest, 0)
+	for _, command := range e.commands {
+		suggestion := prompt.Suggest{
+			Text:        command.id,
+			Description: command.description,
+		}
+		suggestions = append(suggestions, suggestion)
+	}
+	return suggestions
 }

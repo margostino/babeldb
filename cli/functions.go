@@ -11,5 +11,5 @@ func exit() {
 }
 
 func help() {
-	fmt.Println("bye!")
+	fmt.Println("help")
 }
