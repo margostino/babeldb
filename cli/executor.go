@@ -21,7 +21,7 @@ func newExecutor() *Executor {
 
 func (e *Executor) execute(input string) {
 	command, err := e.lookup(input)
-	if input != "" && !common.IsError(err, "command lookup failed") {
+	if !common.IsError(err, "command lookup failed") {
 		command.function(input)
 	}
 }

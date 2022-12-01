@@ -8,9 +8,9 @@ func New() *Cli {
 	executor := newExecutor()
 	suggestions := executor.newSuggestions()
 	return &Cli{
-		Prompt:      "cli@babel",
-		Suggestions: suggestions,
-		Executor:    executor,
+		prompt:      "cli@babel",
+		suggestions: suggestions,
+		executor:    executor,
 	}
 }
 

@@ -5,42 +5,85 @@ import (
 	"github.com/c-bata/go-prompt"
 	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 )
 
 type Cli struct {
-	Prompt      string
-	Suggestions []prompt.Suggest
-	Executor    *Executor
+	prompt      string
+	suggestions []prompt.Suggest
+	executor    *Executor
 }
 
 func (cli *Cli) Start() {
 	welcome()
+
+	var input string
+	var isNewLine = false
+	var inputs = make([]string, 0)
+
 	for {
-		input := cli.prompt()
+		if isNewLine {
+			input = cli.printNewLine()
+			//inputs = make([]string, 0)
+		} else {
+			input = cli.printPromptAndGetInput()
+		}
+
 		normalizedInput := normalize(input)
-		if isValidCommand(normalizedInput) {
-			cli.Executor.execute(normalizedInput)
+
+		if normalizedInput == "" {
+			continue
+		} else if !isNewLine && normalizedInput == "help" {
+			cli.help()
+		} else if !isNewLine && normalizedInput == "exit" {
+			cli.exit()
+		} else if !isEndOfCommand(normalizedInput) {
+			isNewLine = true
+			inputs = append(inputs, normalizedInput)
+		} else if cli.isValidCommand(normalizedInput) {
+			isNewLine = false
+			if len(inputs) > 0 {
+				multilineInput := fmt.Sprintf("%s %s", strings.Join(inputs, " "), normalizedInput)
+				cli.execute(multilineInput)
+			} else {
+				cli.execute(normalizedInput)
+			}
 		} else {
 			fmt.Printf("input %q is not valid\n", normalizedInput)
 		}
+
 	}
 }
 
-func (cli *Cli) SetPrompt(name string) *Cli {
-	cli.Prompt = name
-	return cli
+func (cli *Cli) isValidCommand(command string) bool {
+	// TODO
+	return true
 }
 
-func (cli *Cli) Help() {
-	for _, option := range cli.Suggestions {
+func (cli *Cli) help() {
+	for _, option := range cli.suggestions {
 		fmt.Printf("[ %s ] - %s\n", option.Text, option.Description)
 	}
 }
 
-func (cli *Cli) prompt() string {
-	prefix := fmt.Sprintf("%s> ", cli.Prompt)
-	return prompt.Input(strings.ToLower(prefix), completer(cli.Suggestions))
+func (cli *Cli) exit() {
+	fmt.Println("bye!")
+	os.Exit(0)
+}
+
+func (cli *Cli) printPromptAndGetInput() string {
+	prefix := fmt.Sprintf("%s> ", cli.prompt)
+	return prompt.Input(strings.ToLower(prefix), completer(cli.suggestions))
+}
+
+func (cli *Cli) printNewLine() string {
+	prefix := "        | "
+	return prompt.Input(strings.ToLower(prefix), completer(cli.suggestions))
+}
+
+func (cli *Cli) execute(input string) {
+	cli.executor.execute(input)
 }
 
 func welcome() {
