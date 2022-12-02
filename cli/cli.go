@@ -78,7 +78,7 @@ func (cli *Cli) printPromptAndGetInput() string {
 }
 
 func (cli *Cli) printNewLine() string {
-	prefix := "        | "
+	prefix := "           | "
 	return prompt.Input(strings.ToLower(prefix), completer(cli.suggestions))
 }
 

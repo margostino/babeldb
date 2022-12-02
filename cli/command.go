@@ -15,7 +15,7 @@ func newCommands() []*Command {
 	return []*Command{
 		{
 			id:          "create-source",
-			pattern:     "^create source [a-zA-Z0-9_ .=\"\\/*]+;$",
+			pattern:     "^create source [a-zA-Z0-9_ .=\"\\/*:]+;$",
 			function:    createSource,
 			description: "List commands available",
 		},
