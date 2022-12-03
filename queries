@@ -1,0 +1,11 @@
+create source earth with url = "https://earth.org/";
+
+CREATE SOURCE earth
+FROM 'https://earth.org'
+WHEN '*/5 * * * *';
+
+CREATE SOURCE earth FROM 'https://earth.org' WHEN '*/5 * * * *';
+
+SELECT token1
+FROM earth
+WHERE conditions;

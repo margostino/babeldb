@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"github.com/c-bata/go-prompt"
+	"github.com/margostino/babeldb/common"
 	"io/ioutil"
 	"log"
 	"os"
@@ -12,14 +13,15 @@ import (
 type Cli struct {
 	prompt      string
 	suggestions []prompt.Suggest
-	executor    *Executor
 }
 
 func (cli *Cli) Start() {
 	welcome()
 
 	var input string
+	var queryErr error
 	var isNewLine = false
+	var query Query
 	var inputs = make([]string, 0)
 
 	for {
@@ -45,10 +47,15 @@ func (cli *Cli) Start() {
 			isNewLine = false
 			if len(inputs) > 0 {
 				multilineInput := fmt.Sprintf("%s %s", strings.Join(inputs, " "), normalizedInput)
-				cli.execute(multilineInput)
+				query, queryErr = Parse(multilineInput)
 			} else {
-				cli.execute(normalizedInput)
+				query, queryErr = Parse(normalizedInput)
 			}
+
+			if !common.IsError(queryErr, "when parsing input") {
+				cli.execute(query)
+			}
+
 		} else {
 			fmt.Printf("input %q is not valid\n", normalizedInput)
 		}
@@ -82,8 +89,8 @@ func (cli *Cli) printNewLine() string {
 	return prompt.Input(strings.ToLower(prefix), completer(cli.suggestions))
 }
 
-func (cli *Cli) execute(input string) {
-	cli.executor.execute(input)
+func (cli *Cli) execute(query Query) {
+	query.Solver(query.Params)
 }
 
 func welcome() {
