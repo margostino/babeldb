@@ -2,11 +2,13 @@ package cli
 
 import (
 	"github.com/c-bata/go-prompt"
+	"github.com/margostino/babeldb/engine"
 )
 
 func New() *Cli {
 	return &Cli{
 		prompt:      "cli@babel",
+		engine:      engine.New(),
 		suggestions: newSuggestions(),
 	}
 }

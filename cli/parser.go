@@ -37,9 +37,9 @@ func parse(input string) (Query, error) {
 	return parser.parse()
 }
 
-func (q *Query) solve() {
-	q.Solver(q.Params)
-}
+//func (q *Query) solve() {
+//	q.Solver(q.Params)
+//}
 
 func (p *parser) parse() (Query, error) {
 	q, err := p.doParse()

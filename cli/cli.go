@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/c-bata/go-prompt"
 	"github.com/margostino/babeldb/common"
+	"github.com/margostino/babeldb/engine"
 	"io/ioutil"
 	"log"
 	"os"
@@ -12,6 +13,7 @@ import (
 
 type Cli struct {
 	prompt      string
+	engine      *engine.Engine
 	suggestions []prompt.Suggest
 }
 
@@ -90,7 +92,11 @@ func (cli *Cli) printNewLine() string {
 }
 
 func (cli *Cli) execute(query Query) {
-	query.Solver(query.Params)
+	query.Solver(cli.engine, query.Params)
+}
+
+func isEndOfCommand(command string) bool {
+	return command[len(command)-1:] == ";"
 }
 
 func welcome() {

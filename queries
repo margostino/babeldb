@@ -6,6 +6,18 @@ WHEN '*/5 * * * *';
 
 CREATE SOURCE earth FROM 'https://earth.org' WHEN '*/5 * * * *';
 
+//Every second starting at second :00, at minute :00, at 00am, of every day
+CREATE SOURCE earth FROM 'https://earth.org' WHEN '0/1 0 0 ? * * *';
+
+// Every second
+CREATE SOURCE earth FROM 'https://earth.org' WHEN '* * * * * *';
+CREATE SOURCE earth FROM 'https://earth.org' WHEN '@every 1s';
+CREATE SOURCE earth FROM 'https://earth.org' WHEN '@every 5m';
+
 SELECT token1
 FROM earth
 WHERE conditions;
+
+
+CRON expression generator:
+https://www.freeformatter.com/cron-expression-generator-quartz.html

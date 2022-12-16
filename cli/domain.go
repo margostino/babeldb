@@ -1,5 +1,7 @@
 package cli
 
+import "github.com/margostino/babeldb/engine"
+
 type step int
 type Param int
 type Type int
@@ -36,7 +38,7 @@ type Query struct {
 	Params     map[Param]interface{}
 	Fields     []string
 	Aliases    map[string]string
-	Solver     func(map[Param]interface{})
+	Solver     func(*engine.Engine, map[Param]interface{})
 }
 
 type Condition struct {

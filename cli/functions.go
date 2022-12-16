@@ -1,11 +1,10 @@
 package cli
 
-func createSource(params map[Param]interface{}) {
-	name := params[sourceName].(string)
-	println(name)
-	//source := &db.Source{
-	//	Name: name,
-	//	Url:
-	//}
+import "github.com/margostino/babeldb/engine"
 
+func createSource(engine *engine.Engine, params map[Param]interface{}) {
+	name := params[sourceName].(string)
+	url := params[sourceUrl].(string)
+	cronExp := params[schedule].(string)
+	engine.AddSource(name, url, cronExp)
 }
