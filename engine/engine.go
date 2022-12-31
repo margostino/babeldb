@@ -40,8 +40,15 @@ func (e *Engine) createSource(name string, url string, schedule string) {
 	job.Start()
 }
 
-func (e *Engine) selectTokens(sourceName string) {
-	e.storage.SelectTokens(sourceName)
+func (e *Engine) selectTokens(sourceName string, whereExpr *sqlparser.Expr) []*storage.Token {
+	conditions := e.getConditions(whereExpr)
+	return e.storage.SelectTokens(sourceName, conditions)
+}
+
+func (e *Engine) getConditions(whereExpr *sqlparser.Expr) map[string]interface{} {
+	conditions := make(map[string]interface{})
+	
+	return conditions
 }
 
 func (e *Engine) Parse(input string) (*sqlparser.Statement, error) {
@@ -64,8 +71,8 @@ func (e *Engine) Parse(input string) (*sqlparser.Statement, error) {
 		if !common.IsError(err, "when parsing SQL input") {
 			switch stmt := statement.(type) {
 			case *sqlparser.Select:
-				println("do select")
-				e.selectTokens("earth")
+				results := e.selectTokens("earth", &stmt.Where.Expr)
+				println(results)
 				_ = stmt
 			case *sqlparser.Insert:
 			}

@@ -35,6 +35,13 @@ func (s *Storage) AddSource(source *Source) {
 	s.sources[source.Name] = source
 }
 
-func (s *Storage) SelectTokens(name string) []*Token {
-	return s.sources[name].Tokens
+func (s *Storage) SelectTokens(name string, conditions map[string]interface{}) []*Token {
+	results := make([]*Token, 0)
+	tokenType := conditions[""].(html.TokenType)
+	for _, token := range s.sources[name].Tokens {
+		if token.Type == tokenType {
+			results = append(results, token)
+		}
+	}
+	return results
 }
