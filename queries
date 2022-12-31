@@ -21,3 +21,15 @@ WHERE conditions;
 
 CRON expression generator:
 https://www.freeformatter.com/cron-expression-generator-quartz.html
+
+
+
+SELECT *
+FROM earth
+WHERE data LIKE '%some%';
+
+SELECT token, some
+FROM earth
+WHERE data LIKE '%some%';
+
+SELECT token, some FROM earth WHERE data LIKE '%some%';

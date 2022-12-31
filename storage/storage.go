@@ -34,3 +34,7 @@ func New() *Storage {
 func (s *Storage) AddSource(source *Source) {
 	s.sources[source.Name] = source
 }
+
+func (s *Storage) SelectTokens(name string) []*Token {
+	return s.sources[name].Tokens
+}

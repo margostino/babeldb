@@ -5,6 +5,7 @@ import (
 	"github.com/c-bata/go-prompt"
 	"github.com/margostino/babeldb/common"
 	"github.com/margostino/babeldb/engine"
+	"github.com/xwb1989/sqlparser"
 	"io/ioutil"
 	"log"
 	"os"
@@ -21,9 +22,9 @@ func (cli *Cli) Start() {
 	welcome()
 
 	var input string
-	var queryErr error
+	var parseErr error
+	var statement *sqlparser.Statement
 	var isNewLine = false
-	var query Query
 	var inputs = make([]string, 0)
 
 	for {
@@ -49,13 +50,13 @@ func (cli *Cli) Start() {
 			isNewLine = false
 			if len(inputs) > 0 {
 				multilineInput := fmt.Sprintf("%s %s", strings.Join(inputs, " "), normalizedInput)
-				query, queryErr = Parse(multilineInput)
+				statement, parseErr = cli.engine.Parse(multilineInput)
 			} else {
-				query, queryErr = Parse(normalizedInput)
+				statement, parseErr = cli.engine.Parse(normalizedInput)
 			}
 
-			if !common.IsError(queryErr, "when parsing input") {
-				cli.execute(query)
+			if !common.IsError(parseErr, "when parsing input") {
+				cli.execute(statement)
 			}
 
 		} else {
@@ -91,8 +92,8 @@ func (cli *Cli) printNewLine() string {
 	return prompt.Input(strings.ToLower(prefix), completer(cli.suggestions))
 }
 
-func (cli *Cli) execute(query Query) {
-	query.Solver(cli.engine, query.Params)
+func (cli *Cli) execute(statement *sqlparser.Statement) {
+	//query.Solver(cli.engine, query.Params)
 }
 
 func isEndOfCommand(command string) bool {
