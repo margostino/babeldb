@@ -65,6 +65,7 @@ func (e *Engine) Parse(input string) (*sqlparser.Statement, error) {
 			switch stmt := statement.(type) {
 			case *sqlparser.Select:
 				println("do select")
+				e.selectTokens("earth")
 				_ = stmt
 			case *sqlparser.Insert:
 			}
