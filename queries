@@ -36,4 +36,7 @@ SELECT token, some FROM earth WHERE data LIKE '%some%';
 SELECT token, some FROM earth WHERE type = 'text';
 SELECT token, some FROM earth WHERE type = 'text' AND data = 'some';
 SELECT token, some FROM earth WHERE type = 'text' AND data = 'some' AND other = 'dummy';
-SELECT token, some FROM earth WHERE type = 'text' AND data = 'some' AND other = 'dummy' AND name LIKE '%fake%';
+type = :1 and data = :2 and other = :3 and name like :4
+
+SELECT token, some FROM earth WHERE field1 ='text' AND field2= 'some' AND field3 = 'dummy' GROUP BY token, some;
+SELECT token, some FROM earth WHERE type ='text' AND field2= 'some' AND field3 = 'dummy' GROUP BY token, some;
