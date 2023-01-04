@@ -51,8 +51,14 @@ func (e *Engine) getConditions(whereConditions *map[string]*querypb.BindVariable
 	return conditions
 }
 
-func (e *Engine) Parse(input string) (*sqlparser.Statement, error) {
-	var statement *sqlparser.Statement
+func (e *Engine) Execute(query string) {
+
+}
+
+func (e *Engine) Parse(input string) (map[interface{}]interface{}, error) {
+	var query string
+	var bindVars = make(map[string]*querypb.BindVariable)
+	var queryVars = make(map[interface{}]interface{}, 0)
 
 	if strings.HasPrefix(input, "create source") {
 		parts := common.NewString(input).
@@ -65,46 +71,67 @@ func (e *Engine) Parse(input string) (*sqlparser.Statement, error) {
 			Split("&").
 			Values()
 
-		e.createSource(parts[0], parts[1], parts[2])
+		name := parts[0]
+		url := parts[1]
+		schedule := parts[2]
+
+		query = fmt.Sprintf("insert into %s (url, schedule) values ('%s', '%s')", name, url, schedule)
 	} else {
-		statement, err := sqlparser.Parse(input)
-		var bindVars = make(map[string]*querypb.BindVariable)
-		sqlparser.Normalize(statement, bindVars, "")
-
-		if !common.IsError(err, "when parsing SQL input") {
-			switch stmt := statement.(type) {
-			case *sqlparser.Select:
-				buf := sqlparser.NewTrackedBuffer(nil)
-				stmt.Where.Expr.Format(buf)
-				whereCondition := buf.String()
-
-				var fields = whereCondition
-				var preField = ""
-				whereConditionFields := make(map[string]*querypb.BindVariable, 0)
-				for id, bindVar := range bindVars {
-					fields = common.NewString(fields).
-						ReplaceAll(fmt.Sprintf(" = :%s", id), "").
-						ReplaceAll(" and ", " ").
-						ReplaceAll(preField, "").
-						Value()
-					field := common.NewString(fields).
-						TrimSpace().
-						Split(" ").
-						Values()[0]
-					preField = field
-					whereConditionFields[field] = bindVar
-				}
-
-				results := e.selectTokens("earth", whereConditionFields)
-				println(results)
-				_ = stmt
-			case *sqlparser.Insert:
-			}
-		}
-		return &statement, err
+		query = input
 	}
 
-	return statement, nil
+	statement, err := sqlparser.Parse(query)
+	sqlparser.Normalize(statement, bindVars, "")
+
+	if !common.IsError(err, "when parsing SQL input") {
+		switch stmt := statement.(type) {
+		case *sqlparser.Select:
+			var preField = ""
+			queryVars[QueryType] = SelectType
+
+			whereBuffer := sqlparser.NewTrackedBuffer(nil)
+			sourceBuffer := sqlparser.NewTrackedBuffer(nil)
+
+			stmt.Where.Expr.Format(whereBuffer)
+			stmt.From.Format(sourceBuffer)
+
+			fields := whereBuffer.String()
+			queryVars[Source] = sourceBuffer.String()
+
+			for id, bindVar := range bindVars {
+				fields = common.NewString(fields).
+					ReplaceAll(fmt.Sprintf(" = :%s", id), "").
+					ReplaceAll(" and ", " ").
+					ReplaceAll(preField, "").
+					Value()
+				field := common.NewString(fields).
+					TrimSpace().
+					Split(" ").
+					Values()[0]
+				preField = field
+				queryVars[field] = string(bindVar.Value)
+			}
+
+			x := queryVars[Source]
+			println(x)
+			//results := e.selectTokens("earth", queryVars)
+			//println(results)
+
+		case *sqlparser.Insert:
+			tableBuffer := sqlparser.NewTrackedBuffer(nil)
+			stmt.Table.Format(tableBuffer)
+			if len(bindVars) == 2 {
+				queryVars[QueryType] = CreateType
+				queryVars[Source] = tableBuffer.String()
+				queryVars[Url] = string(bindVars["1"].Value)
+				queryVars[Schedule] = string(bindVars["2"].Value)
+			} else {
+				// TODO
+			}
+		}
+	}
+
+	return queryVars, err
 
 }
 

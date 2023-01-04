@@ -64,6 +64,7 @@ func (s *String) Split(separator string) *StringSlice {
 	values := &StringSlice{
 		values: strings.Split(s.value, separator),
 	}
+
 	return values
 }
 

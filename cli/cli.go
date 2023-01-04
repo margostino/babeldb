@@ -3,7 +3,6 @@ package cli
 import (
 	"fmt"
 	"github.com/c-bata/go-prompt"
-	"github.com/margostino/babeldb/common"
 	"github.com/margostino/babeldb/engine"
 	"github.com/xwb1989/sqlparser"
 	"io/ioutil"
@@ -21,21 +20,19 @@ type Cli struct {
 func (cli *Cli) Start() {
 	welcome()
 
-	var input string
-	var parseErr error
-	var statement *sqlparser.Statement
+	var rawInput, fullInput string
 	var isNewLine = false
-	var inputs = make([]string, 0)
+	var multilineInputs = make([]string, 0)
 
 	for {
 		if isNewLine {
-			input = cli.printNewLine()
+			rawInput = cli.printNewLine()
 			//inputs = make([]string, 0)
 		} else {
-			input = cli.printPromptAndGetInput()
+			rawInput = cli.printPromptAndGetInput()
 		}
 
-		normalizedInput := normalize(input)
+		normalizedInput := normalize(rawInput)
 
 		if normalizedInput == "" {
 			continue
@@ -45,18 +42,24 @@ func (cli *Cli) Start() {
 			cli.exit()
 		} else if !isEndOfCommand(normalizedInput) {
 			isNewLine = true
-			inputs = append(inputs, normalizedInput)
+			multilineInputs = append(multilineInputs, normalizedInput)
 		} else if cli.isValidCommand(normalizedInput) {
 			isNewLine = false
-			if len(inputs) > 0 {
-				multilineInput := fmt.Sprintf("%s %s", strings.Join(inputs, " "), normalizedInput)
-				statement, parseErr = cli.engine.Parse(multilineInput)
+			if len(multilineInputs) > 0 {
+				fullInput = fmt.Sprintf("%s %s", strings.Join(multilineInputs, " "), normalizedInput)
 			} else {
-				statement, parseErr = cli.engine.Parse(normalizedInput)
+				fullInput = normalizedInput
 			}
 
-			if !common.IsError(parseErr, "when parsing input") {
-				cli.execute(statement)
+			inputs := strings.Split(fullInput, ";")
+
+			for _, input := range inputs {
+				statement, parseErr := cli.engine.Parse(input)
+				println(statement)
+				println(parseErr)
+				//if !common.IsError(parseErr, "when parsing input") {
+				//	cli.execute(statement)
+				//}
 			}
 
 		} else {
@@ -96,8 +99,8 @@ func (cli *Cli) execute(statement *sqlparser.Statement) {
 	//query.Solver(cli.engine, query.Params)
 }
 
-func isEndOfCommand(command string) bool {
-	return command[len(command)-1:] == ";"
+func isEndOfCommand(input string) bool {
+	return input[len(input)-1:] == ";"
 }
 
 func welcome() {

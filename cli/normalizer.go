@@ -9,6 +9,9 @@ func normalize(input string) string {
 		ToLower().
 		ReplaceAll("\n", " ").
 		ReplaceAll("\r", " ").
+		ReplaceAll(" ; ", ";").
+		ReplaceAll("; ", ";").
+		ReplaceAll(" ;", ";").
 		TrimSpace().
 		Value()
 }

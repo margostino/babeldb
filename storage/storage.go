@@ -3,6 +3,7 @@ package storage
 import (
 	"github.com/xwb1989/sqlparser/dependency/querypb"
 	"golang.org/x/net/html"
+	"log"
 )
 
 type Storage struct {
@@ -68,10 +69,15 @@ func (s *Storage) SelectTokens(name string, conditions map[string]*querypb.BindV
 		}
 	}
 
-	for _, token := range s.sources[name].Tokens {
-		if token.Type == tokenType {
-			results = append(results, token)
+	if s.sources[name] != nil {
+		for _, token := range s.sources[name].Tokens {
+			if token.Type == tokenType {
+				results = append(results, token)
+			}
 		}
+	} else {
+		log.Print("source name not found!")
 	}
+
 	return results
 }
