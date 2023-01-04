@@ -21,3 +21,28 @@ WHERE conditions;
 
 CRON expression generator:
 https://www.freeformatter.com/cron-expression-generator-quartz.html
+
+
+
+SELECT *
+FROM earth
+WHERE data LIKE '%some%';
+
+SELECT token, some
+FROM earth
+WHERE data LIKE '%some%';
+
+SELECT token, some FROM earth WHERE data LIKE '%some%';
+SELECT token, some FROM earth WHERE type = 'text';
+SELECT token, some FROM earth WHERE type = 'text' AND data = 'some';
+SELECT token, some FROM earth WHERE type = 'text' AND data = 'some' AND other = 'dummy';
+type = :1 and data = :2 and other = :3 and name like :4
+
+SELECT token, some FROM earth WHERE field1 ='text' AND field2= 'some' AND field3 = 'dummy' GROUP BY token, some;
+
+CREATE SOURCE earth FROM 'https://earth.org' WHEN '*/5 * * * *';
+SELECT token, some FROM earth WHERE type ='text' AND field2= 'some' AND field3 = 'dummy';
+
+CREATE TABLE new_table_name AS SELECT column1, column2 FROM existing_table_name WHERE some = 'ddd';
+CREATE TABLE earth ('*/5 * * * *' VARCHAR(100) NOT NULL,  VARCHAR(100) NOT NULL);
+INSERT INTO earth (url, schedule) VALUES ('https://earth.org', '*/5 * * * *');

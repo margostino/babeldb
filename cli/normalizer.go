@@ -5,8 +5,13 @@ import (
 )
 
 func normalize(input string) string {
-	command := common.NewString(input)
-	return command.ToLower().
+	return common.NewString(input).
+		ToLower().
+		ReplaceAll("\n", " ").
+		ReplaceAll("\r", " ").
+		ReplaceAll(" ; ", ";").
+		ReplaceAll("; ", ";").
+		ReplaceAll(" ;", ";").
 		TrimSpace().
 		Value()
 }
