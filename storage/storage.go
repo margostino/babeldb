@@ -3,6 +3,7 @@ package storage
 import (
 	"fmt"
 	"golang.org/x/net/html"
+	"strings"
 )
 
 type Storage struct {
@@ -66,11 +67,19 @@ func (s *Storage) SelectTokens(name string, conditions map[string]string) []*Tok
 		default:
 			// TODO
 		}
+	} else {
+		tokenType = 100
 	}
 
 	if s.sources[name] != nil {
 		for _, token := range s.sources[name].Tokens {
-			if token.Type == tokenType {
+			lowerData := strings.ToLower(token.Data)
+			tokenTypeMatch := (tokenType == 100) || (tokenType != 100 && token.Type == tokenType)
+			dataMatch := conditions["data"] == "" || strings.Contains(lowerData, conditions["data"])
+			if tokenTypeMatch && dataMatch {
+				if len(token.Attributes) > 0 {
+					println("f")
+				}
 				results = append(results, token)
 			}
 		}
