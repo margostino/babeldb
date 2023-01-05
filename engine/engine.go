@@ -139,9 +139,6 @@ func (e *Engine) Parse(input string) (map[interface{}]interface{}, error) {
 				queryVars[field] = string(bindVar.Value)
 			}
 
-			//results := e.selectTokens("earth", queryVars)
-			//println(results)
-
 		case *sqlparser.Insert:
 			tableBuffer := sqlparser.NewTrackedBuffer(nil)
 			stmt.Table.Format(tableBuffer)
@@ -159,10 +156,3 @@ func (e *Engine) Parse(input string) (map[interface{}]interface{}, error) {
 	return queryVars, err
 
 }
-
-//func selectData(engine *engine.Engine, params map[Param]interface{}) {
-//	name := params[sourceName].(string)
-//	url := params[sourceUrl].(string)
-//	cronExp := params[schedule].(string)
-//	engine.AddSource(name, url, cronExp)
-//}

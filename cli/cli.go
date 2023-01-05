@@ -3,8 +3,8 @@ package cli
 import (
 	"fmt"
 	"github.com/c-bata/go-prompt"
-	"github.com/margostino/babeldb/common"
 	"github.com/margostino/babeldb/engine"
+	"github.com/xwb1989/sqlparser"
 	"io/ioutil"
 	"log"
 	"os"
@@ -49,7 +49,7 @@ func (cli *Cli) Start() {
 			} else {
 				fullInput = normalizedInput
 			}
-
+      
 			inputs := strings.Split(fullInput[:len(fullInput)-1], ";")
 
 			for _, input := range inputs {
