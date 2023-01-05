@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"github.com/xwb1989/sqlparser/dependency/querypb"
+	"fmt"
 	"golang.org/x/net/html"
 	"log"
 )
@@ -37,12 +37,12 @@ func (s *Storage) AddSource(source *Source) {
 	s.sources[source.Name] = source
 }
 
-func (s *Storage) SelectTokens(name string, conditions map[string]*querypb.BindVariable) []*Token {
+func (s *Storage) SelectTokens(name string, conditions map[string]string) []*Token {
 	var tokenType html.TokenType
 	results := make([]*Token, 0)
 
-	if conditions["type"] != nil {
-		switch value := string(conditions["type"].Value); value {
+	if conditions["type"] != "" {
+		switch value := conditions["type"]; value {
 		case "text":
 			tokenType = html.TextToken
 			break
@@ -76,7 +76,7 @@ func (s *Storage) SelectTokens(name string, conditions map[string]*querypb.BindV
 			}
 		}
 	} else {
-		log.Print("source name not found!")
+		fmt.Println("source name not found!")
 	}
 
 	return results

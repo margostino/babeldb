@@ -20,14 +20,13 @@ type Cli struct {
 func (cli *Cli) Start() {
 	welcome()
 
-	var rawInput, fullInput string
 	var isNewLine = false
+	var rawInput, fullInput string
 	var multilineInputs = make([]string, 0)
 
 	for {
 		if isNewLine {
 			rawInput = cli.printNewLine()
-			//inputs = make([]string, 0)
 		} else {
 			rawInput = cli.printPromptAndGetInput()
 		}
@@ -50,16 +49,14 @@ func (cli *Cli) Start() {
 			} else {
 				fullInput = normalizedInput
 			}
-
-			inputs := strings.Split(fullInput, ";")
+      
+			inputs := strings.Split(fullInput[:len(fullInput)-1], ";")
 
 			for _, input := range inputs {
-				statement, parseErr := cli.engine.Parse(input)
-				println(statement)
-				println(parseErr)
-				//if !common.IsError(parseErr, "when parsing input") {
-				//	cli.execute(statement)
-				//}
+				query, err := cli.engine.Parse(input)
+				if !common.IsError(err, "when parsing input") {
+					cli.execute(query)
+				}
 			}
 
 		} else {
@@ -95,8 +92,8 @@ func (cli *Cli) printNewLine() string {
 	return prompt.Input(strings.ToLower(prefix), completer(cli.suggestions))
 }
 
-func (cli *Cli) execute(statement *sqlparser.Statement) {
-	//query.Solver(cli.engine, query.Params)
+func (cli *Cli) execute(query map[interface{}]interface{}) {
+	cli.engine.Solve(query)
 }
 
 func isEndOfCommand(input string) bool {
