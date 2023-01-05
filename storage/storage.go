@@ -3,7 +3,6 @@ package storage
 import (
 	"fmt"
 	"golang.org/x/net/html"
-	"log"
 )
 
 type Storage struct {
