@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"errors"
 	"fmt"
 	"github.com/margostino/babeldb/collector"
 	"github.com/margostino/babeldb/common"
@@ -24,6 +25,36 @@ func New() *Engine {
 
 }
 
+func (e *Engine) Solve(query map[interface{}]interface{}) {
+	source := query[Source].(string)
+	switch query[QueryType] {
+	case SelectType:
+		conditions := make(map[string]string)
+		for key, value := range query {
+			if key != QueryType && key != Source {
+				conditions[key.(string)] = value.(string)
+			}
+		}
+		results := e.selectTokens(source, conditions)
+		show(results)
+	case CreateType:
+		url := query[Url].(string)
+		schedule := query[Schedule].(string)
+		e.createSource(source, url, schedule)
+	}
+}
+
+func show(results []*storage.Token) {
+	if len(results) == 0 {
+		fmt.Println("no results!")
+	} else {
+		fmt.Println("Type  ||  Data")
+		for _, token := range results {
+			fmt.Printf("%s  ||  %s\n", token.Type, token.Data)
+		}
+	}
+}
+
 func (e *Engine) createSource(name string, url string, schedule string) {
 
 	source := &storage.Source{
@@ -42,17 +73,13 @@ func (e *Engine) createSource(name string, url string, schedule string) {
 	job.Start()
 }
 
-func (e *Engine) selectTokens(sourceName string, conditions map[string]*querypb.BindVariable) []*storage.Token {
+func (e *Engine) selectTokens(sourceName string, conditions map[string]string) []*storage.Token {
 	return e.storage.SelectTokens(sourceName, conditions)
 }
 
 func (e *Engine) getConditions(whereConditions *map[string]*querypb.BindVariable) map[string]interface{} {
 	conditions := make(map[string]interface{})
 	return conditions
-}
-
-func (e *Engine) Execute(query string) {
-
 }
 
 func (e *Engine) Parse(input string) (map[interface{}]interface{}, error) {
@@ -112,8 +139,6 @@ func (e *Engine) Parse(input string) (map[interface{}]interface{}, error) {
 				queryVars[field] = string(bindVar.Value)
 			}
 
-			x := queryVars[Source]
-			println(x)
 			//results := e.selectTokens("earth", queryVars)
 			//println(results)
 
@@ -126,7 +151,7 @@ func (e *Engine) Parse(input string) (map[interface{}]interface{}, error) {
 				queryVars[Url] = string(bindVars["1"].Value)
 				queryVars[Schedule] = string(bindVars["2"].Value)
 			} else {
-				// TODO
+				err = errors.New("wrong query variables size")
 			}
 		}
 	}
