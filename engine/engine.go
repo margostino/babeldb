@@ -33,13 +33,13 @@ func (e *Engine) Solve(query *model.Query) {
 		results := e.selectTokens(source, query)
 		show(results)
 	case model.CreateType:
-		//url := query[Url].(string)
-		//schedule := query[Schedule].(string)
-		//e.createSource(source, url, schedule)
+		url := query.Url
+		schedule := query.Schedule
+		e.createSource(source, url, schedule)
 	}
 }
 
-func show(results []*storage.Token) {
+func show(results []*model.Token) {
 	if len(results) == 0 {
 		fmt.Println("no results!")
 	} else {
@@ -52,7 +52,7 @@ func show(results []*storage.Token) {
 
 func (e *Engine) createSource(name string, url string, schedule string) {
 
-	source := &storage.Source{
+	source := &model.Source{
 		Name: name,
 		Url:  url,
 	}
@@ -68,7 +68,7 @@ func (e *Engine) createSource(name string, url string, schedule string) {
 	job.Start()
 }
 
-func (e *Engine) selectTokens(sourceName string, query *model.Query) []*storage.Token {
+func (e *Engine) selectTokens(sourceName string, query *model.Query) []*model.Token {
 	return e.storage.SelectTokens(sourceName, query)
 }
 
@@ -135,7 +135,13 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 			}
 
 			for key, bindVar := range bindVars {
-				params[key].Key = string(bindVar.Value)
+				if params[key].VarType == model.TokenType {
+					tokenType := model.GetTokenType(string(bindVar.Value))
+					params[key].Key = tokenType
+				} else {
+					params[key].Key = string(bindVar.Value)
+				}
+
 				if bindVar.Type == querypb.Type_VARBINARY {
 					params[key].VarType = model.StringType
 				}
@@ -143,25 +149,29 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 
 			query = &model.Query{
 				Source:     sourceBuffer.String(),
-				Expression: expression,
 				QueryType:  model.SelectType,
+				Expression: expression,
 			}
 
 		case *sqlparser.Insert:
 			tableBuffer := sqlparser.NewTrackedBuffer(nil)
 			stmt.Table.Format(tableBuffer)
 			if len(bindVars) == 2 {
-				//queryVars[QueryType] = CreateType
-				//queryVars[Source] = tableBuffer.String()
-				//queryVars[Url] = string(bindVars["1"].Value)
-				//queryVars[Schedule] = string(bindVars["2"].Value)
+				query = &model.Query{
+					Source:    tableBuffer.String(),
+					QueryType: model.CreateType,
+					Url:       string(bindVars["1"].Value),
+					Schedule:  string(bindVars["2"].Value),
+				}
 			} else {
 				err = errors.New("wrong query variables size")
 			}
 		}
 	}
 
-	//query.InOrderPrint()
+	if query.QueryType == model.SelectType {
+		//query.InOrderPrint()
+	}
 
 	return query, err
 }

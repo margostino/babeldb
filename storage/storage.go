@@ -1,44 +1,27 @@
 package storage
 
 import (
+	"fmt"
 	"github.com/margostino/babeldb/model"
-	"golang.org/x/net/html"
 )
 
 type Storage struct {
-	sources map[string]*Source
-}
-
-type Attributes struct {
-	Key   string
-	Value string
-}
-
-type Token struct {
-	Type       html.TokenType
-	Data       string
-	Attributes []*Attributes
-}
-
-type Source struct {
-	Name   string
-	Url    string
-	Tokens []*Token
+	sources map[string]*model.Source
 }
 
 func New() *Storage {
 	return &Storage{
-		sources: make(map[string]*Source),
+		sources: make(map[string]*model.Source),
 	}
 }
 
-func (s *Storage) AddSource(source *Source) {
+func (s *Storage) AddSource(source *model.Source) {
 	s.sources[source.Name] = source
 }
 
-func (s *Storage) SelectTokens(name string, query *model.Query) []*Token {
+func (s *Storage) SelectTokens(name string, query *model.Query) []*model.Token {
 	//var tokenType html.TokenType
-	results := make([]*Token, 0)
+	results := make([]*model.Token, 0)
 
 	//if query.Vars conditions["type"] != "" {
 	//	switch value := conditions["type"]; value {
@@ -69,22 +52,25 @@ func (s *Storage) SelectTokens(name string, query *model.Query) []*Token {
 	//} else {
 	//	tokenType = 100
 	//}
-	//
-	//if s.sources[name] != nil {
-	//	for _, token := range s.sources[name].Tokens {
-	//		lowerData := strings.ToLower(token.Data)
-	//		tokenTypeMatch := (tokenType == 100) || (tokenType != 100 && token.Type == tokenType)
-	//		dataMatch := conditions["data"] == "" || strings.Contains(lowerData, conditions["data"])
-	//		if tokenTypeMatch && dataMatch {
-	//			if len(token.Attributes) > 0 {
-	//				println("f")
-	//			}
-	//			results = append(results, token)
-	//		}
-	//	}
-	//} else {
-	//	fmt.Println("source name not found!")
-	//}
+
+	if s.sources[name] != nil {
+		for _, token := range s.sources[name].Tokens {
+			match := query.Match(token)
+			if match {
+				results = append(results, token)
+			}
+			//tokenTypeMatch := (tokenType == 100) || (tokenType != 100 && token.Type == tokenType)
+			//dataMatch := conditions["data"] == "" || strings.Contains(lowerData, conditions["data"])
+			//if tokenTypeMatch && dataMatch {
+			//	if len(token.Attributes) > 0 {
+			//		println("f")
+			//	}
+			//	results = append(results, token)
+			//}
+		}
+	} else {
+		fmt.Println("source name not found!")
+	}
 
 	return results
 }

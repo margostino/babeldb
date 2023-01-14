@@ -3,7 +3,7 @@ package collector
 import (
 	"fmt"
 	"github.com/margostino/babeldb/common"
-	"github.com/margostino/babeldb/storage"
+	"github.com/margostino/babeldb/model"
 	"golang.org/x/net/html"
 	"io/ioutil"
 	"net/http"
@@ -11,10 +11,10 @@ import (
 )
 
 type Collector struct {
-	source *storage.Source
+	source *model.Source
 }
 
-func New(source *storage.Source) *Collector {
+func New(source *model.Source) *Collector {
 	return &Collector{
 		source: source,
 	}
@@ -35,9 +35,9 @@ func (c *Collector) Collect() {
 
 }
 
-func parse(text string) []*storage.Token {
+func parse(text string) []*model.Token {
 
-	var tokens = make([]*storage.Token, 0)
+	var tokens = make([]*model.Token, 0)
 	tkn := html.NewTokenizer(strings.NewReader(text))
 
 	for {
@@ -45,15 +45,15 @@ func parse(text string) []*storage.Token {
 		currentToken := tkn.Token()
 
 		if isValidTokenType(tokenType) && isValidData(currentToken) {
-			attrs := make([]*storage.Attributes, 0)
+			attrs := make([]*model.Attributes, 0)
 			for _, attr := range currentToken.Attr {
-				att := &storage.Attributes{
+				att := &model.Attributes{
 					Key:   attr.Key,
 					Value: attr.Val,
 				}
 				attrs = append(attrs, att)
 			}
-			token := &storage.Token{
+			token := &model.Token{
 				Type:       tokenType,
 				Data:       currentToken.Data,
 				Attributes: attrs,
