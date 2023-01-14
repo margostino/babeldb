@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/margostino/babeldb/collector"
 	"github.com/margostino/babeldb/common"
+	"github.com/margostino/babeldb/model"
 	"github.com/margostino/babeldb/storage"
 	"github.com/robfig/cron/v3"
 	"github.com/xwb1989/sqlparser"
@@ -25,22 +26,16 @@ func New() *Engine {
 
 }
 
-func (e *Engine) Solve(query map[interface{}]interface{}) {
-	source := query[Source].(string)
-	switch query[QueryType] {
-	case SelectType:
-		conditions := make(map[string]string)
-		for key, value := range query {
-			if key != QueryType && key != Source {
-				conditions[key.(string)] = value.(string)
-			}
-		}
-		results := e.selectTokens(source, conditions)
+func (e *Engine) Solve(query *model.Query) {
+	source := query.Source
+	switch query.QueryType {
+	case model.SelectType:
+		results := e.selectTokens(source, query)
 		show(results)
-	case CreateType:
-		url := query[Url].(string)
-		schedule := query[Schedule].(string)
-		e.createSource(source, url, schedule)
+	case model.CreateType:
+		//url := query[Url].(string)
+		//schedule := query[Schedule].(string)
+		//e.createSource(source, url, schedule)
 	}
 }
 
@@ -73,19 +68,15 @@ func (e *Engine) createSource(name string, url string, schedule string) {
 	job.Start()
 }
 
-func (e *Engine) selectTokens(sourceName string, conditions map[string]string) []*storage.Token {
-	return e.storage.SelectTokens(sourceName, conditions)
+func (e *Engine) selectTokens(sourceName string, query *model.Query) []*storage.Token {
+	return e.storage.SelectTokens(sourceName, query)
 }
 
-func (e *Engine) getConditions(whereConditions *map[string]*querypb.BindVariable) map[string]interface{} {
-	conditions := make(map[string]interface{})
-	return conditions
-}
-
-func (e *Engine) Parse(input string) (map[interface{}]interface{}, error) {
-	var query string
+func (e *Engine) Parse(input string) (*model.Query, error) {
+	var queryInput string
+	var query *model.Query
 	var bindVars = make(map[string]*querypb.BindVariable)
-	var queryVars = make(map[interface{}]interface{}, 0)
+	var params = make(map[string]*model.ExpressionNode, 0)
 
 	if strings.HasPrefix(input, "create source") {
 		parts := common.NewString(input).
@@ -102,19 +93,21 @@ func (e *Engine) Parse(input string) (map[interface{}]interface{}, error) {
 		url := parts[1]
 		schedule := parts[2]
 
-		query = fmt.Sprintf("insert into %s (url, schedule) values ('%s', '%s')", name, url, schedule)
+		queryInput = fmt.Sprintf("insert into %s (url, schedule) values ('%s', '%s')", name, url, schedule)
 	} else {
-		query = input
+		queryInput = input
 	}
 
-	statement, err := sqlparser.Parse(query)
+	statement, err := sqlparser.Parse(queryInput)
 	sqlparser.Normalize(statement, bindVars, "")
 
 	if !common.IsError(err, "when parsing SQL input") {
 		switch stmt := statement.(type) {
 		case *sqlparser.Select:
-			var preField = ""
-			queryVars[QueryType] = SelectType
+			//var preField = ""
+			//var operator Operator
+			//var varType VarType
+			//queryVars[QueryType] = SelectType
 
 			whereBuffer := sqlparser.NewTrackedBuffer(nil)
 			sourceBuffer := sqlparser.NewTrackedBuffer(nil)
@@ -122,37 +115,52 @@ func (e *Engine) Parse(input string) (map[interface{}]interface{}, error) {
 			stmt.Where.Expr.Format(whereBuffer)
 			stmt.From.Format(sourceBuffer)
 
-			fields := whereBuffer.String()
-			queryVars[Source] = sourceBuffer.String()
+			//conditions := strings.Split(whereBuffer.String(), " and ")
+			tokens := common.NewString(whereBuffer.String()).
+				ReplaceAll("not like", "not_like").
+				Split(" ").
+				Values()
 
-			for id, bindVar := range bindVars {
-				fields = common.NewString(fields).
-					ReplaceAll(fmt.Sprintf(" = :%s", id), "").
-					ReplaceAll(" and ", " ").
-					ReplaceAll(preField, "").
-					Value()
-				field := common.NewString(fields).
-					TrimSpace().
-					Split(" ").
-					Values()[0]
-				preField = field
-				queryVars[field] = string(bindVar.Value)
+			var expression = &model.ExpressionTree{
+				Root: nil,
+			}
+
+			for _, value := range tokens {
+				token := strings.Split(value, " ")[0]
+				expression.Insert(token)
+
+				if len(token) == 2 && token[0:1] == ":" {
+					params[token[1:]] = expression.Root.Right
+				}
+			}
+
+			expression.InOrderPrint(expression.Root)
+
+			for key, bindVar := range bindVars {
+				params[key].Key = string(bindVar.Value)
+				if bindVar.Type == querypb.Type_VARBINARY {
+					params[key].VarType = model.StringType
+				}
+			}
+
+			query = &model.Query{
+				Source:     sourceBuffer.String(),
+				Expression: expression,
+				QueryType:  model.SelectType,
 			}
 
 		case *sqlparser.Insert:
 			tableBuffer := sqlparser.NewTrackedBuffer(nil)
 			stmt.Table.Format(tableBuffer)
 			if len(bindVars) == 2 {
-				queryVars[QueryType] = CreateType
-				queryVars[Source] = tableBuffer.String()
-				queryVars[Url] = string(bindVars["1"].Value)
-				queryVars[Schedule] = string(bindVars["2"].Value)
+				//queryVars[QueryType] = CreateType
+				//queryVars[Source] = tableBuffer.String()
+				//queryVars[Url] = string(bindVars["1"].Value)
+				//queryVars[Schedule] = string(bindVars["2"].Value)
 			} else {
 				err = errors.New("wrong query variables size")
 			}
 		}
 	}
-
-	return queryVars, err
-
+	return query, err
 }

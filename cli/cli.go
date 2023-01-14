@@ -55,7 +55,7 @@ func (cli *Cli) Start() {
 			for _, input := range inputs {
 				query, err := cli.engine.Parse(input)
 				if !common.IsError(err, "when parsing input") {
-					cli.execute(query)
+					cli.engine.Solve(query)
 				}
 			}
 
@@ -90,10 +90,6 @@ func (cli *Cli) printPromptAndGetInput() string {
 func (cli *Cli) printNewLine() string {
 	prefix := "           | "
 	return prompt.Input(strings.ToLower(prefix), completer(cli.suggestions))
-}
-
-func (cli *Cli) execute(query map[interface{}]interface{}) {
-	cli.engine.Solve(query)
 }
 
 func isEndOfCommand(input string) bool {
