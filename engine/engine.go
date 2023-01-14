@@ -134,8 +134,6 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 				}
 			}
 
-			expression.InOrderPrint(expression.Root)
-
 			for key, bindVar := range bindVars {
 				params[key].Key = string(bindVar.Value)
 				if bindVar.Type == querypb.Type_VARBINARY {
@@ -162,5 +160,8 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 			}
 		}
 	}
+
+	//query.InOrderPrint()
+
 	return query, err
 }

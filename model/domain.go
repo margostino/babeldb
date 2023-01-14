@@ -40,13 +40,15 @@ type Query struct {
 	Expression *ExpressionTree
 }
 
+func (q *Query) InOrderPrint() {
+	q.Expression.InOrderPrint(q.Expression.Root)
+}
+
 func (t *ExpressionTree) InOrderPrint(node *ExpressionNode) {
 	if node != nil {
 		t.InOrderPrint(node.Left)
 		fmt.Printf("InOrder: %s\n", node.Key)
 		t.InOrderPrint(node.Right)
-	} else {
-		//println("JKSBJKBKJBSJBS")
 	}
 }
 
