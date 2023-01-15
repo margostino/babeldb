@@ -43,6 +43,7 @@ SELECT token, some FROM earth WHERE field1 ='text' AND field2= 'some' AND field3
 CREATE SOURCE earth FROM 'https://earth.org' WHEN '*/5 * * * *';
 SELECT token, some FROM earth WHERE type ='text' AND data LIKE '%climate%';
 SELECT token, some FROM earth WHERE type ='text' AND data LIKE '%climate%' AND data NOT LIKE '%<img%';
+SELECT token, some FROM earth WHERE type ='text' AND data LIKE '%climate%' AND data NOT LIKE '%<img%';
 
 
 SELECT token, some FROM earth WHERE type ='text' AND data = 'climate';

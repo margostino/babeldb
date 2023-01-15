@@ -104,16 +104,24 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 	if !common.IsError(err, "when parsing SQL input") {
 		switch stmt := statement.(type) {
 		case *sqlparser.Select:
-			//var preField = ""
-			//var operator Operator
-			//var varType VarType
-			//queryVars[QueryType] = SelectType
-
 			whereBuffer := sqlparser.NewTrackedBuffer(nil)
 			sourceBuffer := sqlparser.NewTrackedBuffer(nil)
+			selectBuffer := sqlparser.NewTrackedBuffer(nil)
 
 			stmt.Where.Expr.Format(whereBuffer)
+			stmt.SelectExprs.Format(selectBuffer)
 			stmt.From.Format(sourceBuffer)
+
+			fields := common.NewString(selectBuffer.String()).
+				ReplaceAll(" ", "").
+				Split(",").
+				Values()
+
+			for _, field := range fields {
+				if field != model.TypeField && field != model.DataField {
+					return nil, errors.New("invalid fields")
+				}
+			}
 
 			//conditions := strings.Split(whereBuffer.String(), " and ")
 			tokens := common.NewString(whereBuffer.String()).
