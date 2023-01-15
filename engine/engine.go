@@ -130,20 +130,20 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 				expression.Insert(token)
 
 				if len(token) == 2 && token[0:1] == ":" {
-					params[token[1:]] = expression.Root.Right
+					params[token[1:]] = expression.GetParamNode(expression.Root)
 				}
 			}
 
 			for key, bindVar := range bindVars {
-				if params[key].VarType == model.TokenType {
+				if params[key].GetType() == model.TokenType {
 					tokenType := model.GetTokenType(string(bindVar.Value))
-					params[key].Key = tokenType
+					params[key].Key.Type = model.GetTokenTypeFrom(tokenType)
+					params[key].Key.Value = string(bindVar.Value)
 				} else {
-					params[key].Key = string(bindVar.Value)
-				}
-
-				if bindVar.Type == querypb.Type_VARBINARY {
-					params[key].VarType = model.StringType
+					params[key].Key.Value = string(bindVar.Value)
+					if bindVar.Type == querypb.Type_VARBINARY {
+						params[key].Key.Type = model.StringType
+					}
 				}
 			}
 
@@ -169,9 +169,9 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 		}
 	}
 
-	if query.QueryType == model.SelectType {
-		//query.InOrderPrint()
-	}
+	//if query.QueryType == model.SelectType {
+	//	query.InOrderPrint()
+	//}
 
 	return query, err
 }

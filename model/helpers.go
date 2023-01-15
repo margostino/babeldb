@@ -3,7 +3,21 @@ package model
 import "golang.org/x/net/html"
 
 func isComparisonOperator(value string) bool {
-	return value == "=" || value == ">" || value == "<" || value == ">=" || value == "<=" || value == "<>" || value == "not_like"
+	return value == "=" || value == ">" || value == "<" || value == ">=" || value == "<=" || value == "<>" || value == "not_like" || value == "like"
+}
+
+func isFieldNode(value string) bool {
+	return TypeField == value && DataField == "data"
+}
+
+func isLowerNodeValue(valueA string, valueB string) bool {
+	if isFieldNode(valueA) && isLeaf(valueB) && !isFieldNode(valueB) {
+		return true
+	}
+	if isLeaf(valueA) && isInode(valueB) {
+		return true
+	}
+	return false
 }
 
 func isLogicalOperator(value string) bool {
@@ -19,31 +33,68 @@ func isLeaf(value string) bool {
 }
 
 func GetTokenType(value string) html.TokenType {
-	var tokenType html.TokenType
 	switch value {
 	case "text":
-		tokenType = html.TextToken
-		break
+		return html.TextToken
 	case "error":
-		tokenType = html.TextToken
-		break
+		return html.ErrorToken
 	case "start_tag":
-		tokenType = html.StartTagToken
-		break
+		return html.StartTagToken
 	case "end_tag":
-		tokenType = html.EndTagToken
-		break
+		return html.EndTagToken
 	case "self_closing_tag":
-		tokenType = html.SelfClosingTagToken
-		break
+		return html.SelfClosingTagToken
 	case "comment":
-		tokenType = html.CommentToken
-		break
+		return html.CommentToken
 	case "doc_type":
-		tokenType = html.DoctypeToken
+		return html.DoctypeToken
+	default:
+		return 999
+	}
+}
+
+func GetTokenTypeFrom(tokenType html.TokenType) Type {
+	switch tokenType {
+	case html.TextToken:
+		return TextTokenType
+	case html.ErrorToken:
+		return ErrorTokenType
+	case html.StartTagToken:
+		return StartTagTokenType
+	case html.EndTagToken:
+		return EndTagTokenType
+	case html.SelfClosingTagToken:
+		return SelfClosingTagTokenType
+	case html.CommentToken:
+		return CommentTokenType
+	case html.DoctypeToken:
+		return DocTypeTokenType
+	default:
+		// TODO
+		return TextTokenType
+	}
+}
+
+func GetOperator(value string) Operator {
+	var operator Operator
+	switch value {
+	case "=":
+		operator = EqualOperator
+		break
+	case "like":
+		operator = LikeOperator
+		break
+	case "not_like":
+		operator = NotLikeOperator
+		break
+	case "and":
+		operator = AndOperator
+		break
+	case "or":
+		operator = OrOperator
 		break
 	default:
-		tokenType = 999
+		operator = 999
 	}
-	return tokenType
+	return operator
 }

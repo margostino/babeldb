@@ -7,22 +7,36 @@ import (
 )
 
 type Operator int32
-type VarType int32
+type Type int32
 type QueryType int32
+
+const (
+	TypeField string = "type"
+	DataField string = "data"
+)
 
 const (
 	EqualOperator Operator = iota
 	LikeOperator
 	NotLikeOperator
-	StringType VarType = iota
+	AndOperator
+	OrOperator
+	StringType Type = iota
 	TokenType
+	TextTokenType
+	ErrorTokenType
+	StartTagTokenType
+	EndTagTokenType
+	SelfClosingTagTokenType
+	CommentTokenType
+	DocTypeTokenType
 	SelectType QueryType = iota
 	CreateType
 )
 
 type QueryVar struct {
 	Operator Operator
-	VarType  VarType
+	Type     Type
 	Field    string
 	Value    interface{}
 }
@@ -31,11 +45,16 @@ type ExpressionTree struct {
 	Root *ExpressionNode
 }
 
+type ExpressionNodeKey struct {
+	Value    string
+	Type     Type
+	Operator Operator
+}
+
 type ExpressionNode struct {
-	Key     interface{}
-	VarType VarType
-	Left    *ExpressionNode
-	Right   *ExpressionNode
+	Key   *ExpressionNodeKey
+	Left  *ExpressionNode
+	Right *ExpressionNode
 }
 
 type Query struct {
@@ -69,54 +88,89 @@ func (q *Query) InOrderPrint() {
 }
 
 func (q *Query) Match(token *Token) bool {
-	return q.Expression.Match(q.Expression.Root, "", token)
+	return q.Expression.Match(q.Expression.Root, token)
 }
 
-func (t *ExpressionTree) Match(node *ExpressionNode, key interface{}, token *Token) bool {
-	var match bool
-	//var key string
-	if node != nil {
-		match = t.Match(node.Left, node.Key, token)
+func (n *ExpressionNode) GetKey() string {
+	return n.Key.Value
+}
 
-		if isComparisonOperator(node.Key.(string)) {
-			field := node.Left.Key
-			value := node.Right.Key
+func (n *ExpressionNode) GetType() Type {
+	return n.Key.Type
+}
+
+func (n *ExpressionNode) GetOperator() Operator {
+	return n.Key.Operator
+}
+
+func (n *ExpressionNode) IsComparisonOperatorNode() bool {
+	return isComparisonOperator(n.GetKey())
+}
+
+func (n *ExpressionNode) IsInode() bool {
+	return isInode(n.GetKey())
+}
+
+func (n *ExpressionNode) IsValueFieldNode() bool {
+	return !isFieldNode(n.GetKey()) && !n.IsInode()
+}
+
+func (n *ExpressionNode) IsLogicalOperatorNode() bool {
+	return isLogicalOperator(n.GetKey())
+}
+
+func (n *ExpressionNode) isParamValue() bool {
+	return len(n.GetKey()) == 2 && n.GetKey()[0:1] == ":"
+}
+
+func (t *ExpressionTree) GetParamNode(node *ExpressionNode) *ExpressionNode {
+
+	if node.isParamValue() {
+		return node
+	}
+
+	return t.GetParamNode(node.Right)
+}
+
+func (t *ExpressionTree) Match(node *ExpressionNode, token *Token) bool {
+	var match bool
+	if !isLeaf(node.GetKey()) {
+		if node.IsComparisonOperatorNode() {
+			var match bool
+			field := node.Left.GetKey()
+			value := node.Right.GetKey()
 
 			if field == "type" {
-				switch node.Key {
-				case "=":
-					match = token.Type.String() == value
-				case "notLike":
+				switch node.GetOperator() {
+				case EqualOperator:
+					match = token.Type == GetTokenType(value)
+				case NotLikeOperator:
 					match = token.Type.String() == value
 				}
 			} else if field == "data" {
-				switch node.Key {
-				case "=":
-					match = token.Type.String() == value
-				case "notLike":
-					match = !strings.Contains(token.Data, value.(string))
+				data := strings.ToLower(token.Data)
+				value = strings.ReplaceAll(value, "%", "")
+				switch node.GetOperator() {
+				case EqualOperator:
+					match = data == value
+				case LikeOperator:
+					match = strings.Contains(data, value)
+				case NotLikeOperator:
+					match = !strings.Contains(token.Data, value)
 				}
 			}
-
+			return match
 		}
-		fmt.Printf("InOrder: %s (%t)\n", node.Key, match)
-		//if isLeaf(node.Key) && isLeafKey {
-		//	field = node.Key
-		//} else if isLeaf(node.Key) && !isLeafKey {
-		//	value = node.Key
-		//} else if isComparisonOperator(node.Key) {
-		//	switch node.Key {
-		//	case "=":
-		//		operator = EqualOperator
-		//	case "like":
-		//		operator = LikeOperator
-		//	case "not_like":
-		//		operator = NotLikeOperator
-		//	}
-		//} else if isLogicalOperator(node.Key) {
-		//	println("ds")
-		//}
-		match = t.Match(node.Right, node.Key, token)
+		match = t.Match(node.Left, token)
+
+		if node.GetOperator() == AndOperator {
+			match = match && t.Match(node.Right, token)
+		} else if node.GetOperator() == OrOperator {
+			match = match || t.Match(node.Right, token)
+		} else {
+			// TODO
+		}
+
 	}
 
 	return match
@@ -125,14 +179,14 @@ func (t *ExpressionTree) Match(node *ExpressionNode, key interface{}, token *Tok
 func (t *ExpressionTree) InOrderPrint(node *ExpressionNode) {
 	if node != nil {
 		t.InOrderPrint(node.Left)
-		fmt.Printf("InOrder: %s\n", node.Key)
+		fmt.Printf("InOrder: %s\n", node.GetKey())
 		t.InOrderPrint(node.Right)
 	}
 }
 
 func (t *ExpressionTree) Insert(key string) {
 	if t.Root == nil {
-		t.Root = &ExpressionNode{Key: key}
+		t.Root = &ExpressionNode{Key: &ExpressionNodeKey{Value: key}}
 	} else {
 		t.Root.Insert(key)
 	}
@@ -141,42 +195,51 @@ func (t *ExpressionTree) Insert(key string) {
 func (n *ExpressionNode) Insert(key string) {
 	if isLeaf(key) {
 		if n.Left == nil {
-			n.Left = &ExpressionNode{Key: key}
+			n.Left = &ExpressionNode{Key: &ExpressionNodeKey{Value: key}}
 		} else if n.Right == nil {
-			n.Right = &ExpressionNode{Key: key}
-			if isComparisonOperator(n.Key.(string)) && n.Left.Key == "type" {
-				n.Right.VarType = TokenType
+			n.Right = &ExpressionNode{Key: &ExpressionNodeKey{Value: key}}
+			if isComparisonOperator(n.GetKey()) && n.Left.GetKey() == TypeField {
+				n.Right.Key.Type = TokenType
 			}
-		}
-	} else if isInode(key) {
-		leafNode := *n
-		n.Key = key
-		n.Left = &leafNode
-		n.Right = nil
-	} else {
-		if n.Right == nil {
-			n.Right = &ExpressionNode{Key: key}
 		} else {
 			n.Right.Insert(key)
 		}
+	} else {
+		operator := GetOperator(key)
+
+		if isLogicalOperator(key) {
+			leafNode := *n
+			node := &ExpressionNode{
+				Key: &ExpressionNodeKey{
+					Value:    key,
+					Operator: operator,
+				},
+				Left:  &leafNode,
+				Right: nil,
+			}
+			n.Key = node.Key
+			n.Left = node.Left
+			n.Right = node.Right
+		} else {
+			leafNode := *n
+			if isLogicalOperator(n.GetKey()) {
+				n.Right = &ExpressionNode{
+					Key: &ExpressionNodeKey{
+						Value:    key,
+						Operator: operator,
+					},
+					Left:  n.Right,
+					Right: nil,
+				}
+			} else {
+				n.Key = &ExpressionNodeKey{
+					Value:    key,
+					Operator: operator,
+				}
+				n.Left = &leafNode
+				n.Right = nil
+			}
+		}
 	}
 
-	//if isInode(key) {
-	//	leafNode := *n
-	//	n.Key = key
-	//	n.Left = &leafNode
-	//	n.Right = nil
-	//} else if isLeaf(key) {
-	//	if n.Left == nil {
-	//		n.Left = &ExpressionNode{Key: key}
-	//	} else if n.Right == nil {
-	//		n.Right = &ExpressionNode{Key: key}
-	//	}
-	//} else {
-	//	if n.Right == nil {
-	//		n.Right = &ExpressionNode{Key: key}
-	//	} else {
-	//		n.Right.Insert(key)
-	//	}
-	//}
 }

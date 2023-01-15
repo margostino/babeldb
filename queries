@@ -41,8 +41,13 @@ type = :1 and data = :2 and other = :3 and name like :4
 SELECT token, some FROM earth WHERE field1 ='text' AND field2= 'some' AND field3 = 'dummy' GROUP BY token, some;
 
 CREATE SOURCE earth FROM 'https://earth.org' WHEN '*/5 * * * *';
+SELECT token, some FROM earth WHERE type ='text' AND data LIKE '%climate%';
+SELECT token, some FROM earth WHERE type ='text' AND data LIKE '%climate%' AND data NOT LIKE '%<img%';
+
+
 SELECT token, some FROM earth WHERE type ='text' AND data = 'climate';
 SELECT token, some FROM earth WHERE type ='text' AND data = 'climate' AND data NOT LIKE '%<img%';
+SELECT token, some FROM earth WHERE type ='text' AND data = 'climate' AND (data NOT LIKE '%<img%' AND data NOT LIKE '%<div%');
 SELECT token, some FROM earth WHERE type ='text' OR type = 'error';
 
 SELECT token, some FROM earth WHERE (type ='text' OR (type = 'error' AND data = 'climate')) AND data LIKE '%earth%';
