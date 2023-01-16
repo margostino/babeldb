@@ -43,9 +43,15 @@ func show(results []*model.Token) {
 	if len(results) == 0 {
 		fmt.Println("no results!")
 	} else {
-		fmt.Println("Type  ||  Data")
+		fmt.Println("Type  ||  Data || Href")
 		for _, token := range results {
-			fmt.Printf("%s  ||  %s\n", token.Type, token.Data)
+			attribute, exists := storage.GetAttribute(token.Attributes, "href")
+			if exists {
+				fmt.Printf("%s  ||  %s  ||  %s\n", token.Type, token.Data, attribute.Value)
+			} else {
+				fmt.Printf("%s  ||  %s\n", token.Type, token.Data)
+			}
+
 		}
 	}
 }

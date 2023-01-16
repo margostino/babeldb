@@ -19,12 +19,22 @@ func (s *Storage) AddSource(source *model.Source) {
 	s.sources[source.Name] = source
 }
 
+func GetAttribute(attributes []*model.Attribute, key string) (*model.Attribute, bool) {
+	for _, attribute := range attributes {
+		if attribute.Key == key {
+			return attribute, true
+		}
+	}
+	return nil, false
+}
+
 func (s *Storage) SelectTokens(name string, query *model.Query) []*model.Token {
 	results := make([]*model.Token, 0)
 	if s.sources[name] != nil {
-		for i, token := range s.sources[name].Tokens {
-			if token.Data == "While the climate crisis has many factors that play a role in the exacerbation of the environment, there are some that warrant more attention than others. Here are […]" {
-				fmt.Printf("%d\n", i)
+		var attribute *model.Attribute
+		for _, token := range s.sources[name].Tokens {
+			if len(token.Attributes) > 0 {
+				attribute, _ = GetAttribute(token.Attributes, "href")
 			}
 			match := query.Match(token)
 			if match {
@@ -38,6 +48,10 @@ func (s *Storage) SelectTokens(name string, query *model.Query) []*model.Token {
 					}
 				}
 				if !exists {
+					if attribute != nil {
+						token.Attributes = append(token.Attributes, attribute)
+						attribute = nil
+					}
 					results = append(results, token)
 				}
 			}

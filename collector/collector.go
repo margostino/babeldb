@@ -45,9 +45,9 @@ func parse(text string) []*model.Token {
 		currentToken := tkn.Token()
 
 		if isValidTokenType(tokenType) && isValidData(currentToken) {
-			attrs := make([]*model.Attributes, 0)
+			attrs := make([]*model.Attribute, 0)
 			for _, attr := range currentToken.Attr {
-				att := &model.Attributes{
+				att := &model.Attribute{
 					Key:   attr.Key,
 					Value: attr.Val,
 				}

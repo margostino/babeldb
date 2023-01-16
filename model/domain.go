@@ -15,9 +15,11 @@ const (
 	TypeField  string = "type"
 	DataField  string = "data"
 	TokenField string = "token"
+	HrefField  string = "href"
 )
 
-var Fields = common.NewStringSlice(TypeField, DataField, TokenField)
+var Fields = common.NewStringSlice(TypeField, DataField, TokenField, HrefField)
+var AttributeFields = common.NewStringSlice(HrefField)
 
 const (
 	EqualOperator Operator = iota
@@ -70,7 +72,7 @@ type Query struct {
 	Expression *ExpressionTree
 }
 
-type Attributes struct {
+type Attribute struct {
 	Key   string
 	Value string
 }
@@ -78,7 +80,7 @@ type Attributes struct {
 type Token struct {
 	Type       html.TokenType
 	Data       string
-	Attributes []*Attributes
+	Attributes []*Attribute
 }
 
 type Source struct {
