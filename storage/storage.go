@@ -32,9 +32,12 @@ func (s *Storage) SelectTokens(name string, query *model.Query) []*model.Token {
 	results := make([]*model.Token, 0)
 	if s.sources[name] != nil {
 		var attribute *model.Attribute
-		for _, token := range s.sources[name].Tokens {
+		for i, token := range s.sources[name].Tokens {
 			if len(token.Attributes) > 0 {
-				attribute, _ = GetAttribute(token.Attributes, "href")
+				newAttribute, _ := GetAttribute(token.Attributes, "href")
+				if newAttribute != nil {
+					attribute = newAttribute
+				}
 			}
 			match := query.Match(token)
 			if match {
@@ -51,6 +54,10 @@ func (s *Storage) SelectTokens(name string, query *model.Query) []*model.Token {
 					if attribute != nil {
 						token.Attributes = append(token.Attributes, attribute)
 						attribute = nil
+					}
+
+					if token.Data == "2022 has been a year of tremendous climate extremes. Humanity is learning the extent of the existential threats posed by climate change and ecological destruction the hard way. […]" {
+						println(i)
 					}
 					results = append(results, token)
 				}

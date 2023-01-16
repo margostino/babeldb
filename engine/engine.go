@@ -49,7 +49,7 @@ func show(results []*model.Token) {
 			if exists {
 				fmt.Printf("%s  ||  %s  ||  %s\n", token.Type, token.Data, attribute.Value)
 			} else {
-				fmt.Printf("%s  ||  %s\n", token.Type, token.Data)
+				//fmt.Printf("%s  ||  %s\n", token.Type, token.Data)
 			}
 
 		}
