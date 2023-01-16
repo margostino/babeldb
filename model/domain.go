@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"github.com/margostino/babeldb/common"
 	"golang.org/x/net/html"
 	"strings"
 )
@@ -11,9 +12,12 @@ type Type int32
 type QueryType int32
 
 const (
-	TypeField string = "type"
-	DataField string = "data"
+	TypeField  string = "type"
+	DataField  string = "data"
+	TokenField string = "token"
 )
+
+var Fields = common.NewStringSlice(TypeField, DataField, TokenField)
 
 const (
 	EqualOperator Operator = iota
@@ -62,7 +66,7 @@ type Query struct {
 	Url        string
 	Schedule   string
 	QueryType  QueryType
-	Vars       []*QueryVar
+	Distinct   bool
 	Expression *ExpressionTree
 }
 

@@ -9,10 +9,6 @@ type String struct {
 	value string
 }
 
-type StringSlice struct {
-	values []string
-}
-
 func NewString(value string) *String {
 	return &String{
 		value: value,
@@ -70,14 +66,4 @@ func (s *String) Split(separator string) *StringSlice {
 
 func (s *String) Value() string {
 	return s.value
-}
-
-func (s *StringSlice) Join(separator string) *String {
-	return &String{
-		value: strings.Join(s.values, separator),
-	}
-}
-
-func (s *StringSlice) Values() []string {
-	return s.values
 }

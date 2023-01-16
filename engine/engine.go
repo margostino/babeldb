@@ -117,8 +117,9 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 				Split(",").
 				Values()
 
+			// TODO: improve and move validations
 			for _, field := range fields {
-				if field != model.TypeField && field != model.DataField {
+				if !model.Fields.Contains(field) {
 					return nil, errors.New("invalid fields")
 				}
 			}
@@ -158,6 +159,7 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 			query = &model.Query{
 				Source:     sourceBuffer.String(),
 				QueryType:  model.SelectType,
+				Distinct:   strings.HasPrefix(queryInput, "select distinct"),
 				Expression: expression,
 			}
 
