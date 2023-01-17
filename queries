@@ -45,6 +45,13 @@ SELECT DISTINCT token, data FROM earth WHERE type ='text' AND data LIKE '%climat
 SELECT token, some FROM earth WHERE type ='text' AND data LIKE '%climate%';
 
 
+CREATE SOURCE planet FROM 'https://www.planet.com/pulse/' WHEN '*/5 * * * *';
+SELECT DISTINCT token, data FROM planet WHERE type ='text' AND data LIKE '%earth%' AND data NOT LIKE '%<img%';
+
+CREATE SOURCE planet FROM 'https://www.planet.com/pulse/planet-accelerates-deployment-of-forest-carbon-monitoring-system/' WHEN '*/5 * * * *';
+SELECT DISTINCT token, data FROM planet WHERE type ='text' AND data LIKE '%earth%' AND data NOT LIKE '%<img%';
+
+
 
 SELECT token, some FROM earth WHERE type ='text' AND data = 'climate';
 SELECT token, some FROM earth WHERE type ='text' AND data = 'climate' AND data NOT LIKE '%<img%';
