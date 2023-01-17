@@ -47,6 +47,9 @@ func show(fields *common.StringSlice, results []*model.Token) {
 		fmt.Println("---------------------------")
 		for _, token := range results {
 			attribute, exists := storage.GetAttribute(token.Attributes, "href")
+			if len(token.Data) == 2 {
+				println("")
+			}
 			if fields.Contains(model.TypeField) {
 				fmt.Printf("Type:  %s\n", token.Type)
 			}
@@ -59,7 +62,6 @@ func show(fields *common.StringSlice, results []*model.Token) {
 				}
 			}
 			fmt.Println("---------------------------")
-
 		}
 	}
 }

@@ -32,51 +32,44 @@ func (t *ExpressionTree) GetParamNode(node *ExpressionNode) *ExpressionNode {
 
 func (t *ExpressionTree) Match(node *ExpressionNode, token *Token) bool {
 	var match bool
-	if !isLeaf(node.GetKey()) {
-		if node.IsComparisonOperatorNode() {
-			var match bool
-			field := node.Left.GetKey()
-			value := node.Right.GetKey()
+	if node.IsComparisonOperatorNode() {
+		field := node.Left.GetKey()
+		value := node.Right.GetKey()
 
-			if field == "type" {
-				switch node.GetOperator() {
-				case EqualOperator:
-					match = token.Type == GetTokenType(value)
-				case NotLikeOperator:
-					match = token.Type.String() == value
-				}
-			} else if field == "data" {
-				data := strings.ToLower(token.Data)
-				value = strings.ReplaceAll(value, "%", "")
-				// TODO: like operator logic
-				switch node.GetOperator() {
-				case EqualOperator:
-					if value == "*" {
-						match = true
-					} else {
-						match = data == value
-					}
-				case LikeOperator:
-					match = strings.Contains(data, value)
-				case NotLikeOperator:
-					if strings.Contains(value, "jQuery") {
-						println("")
-					}
-					match = !strings.Contains(token.Data, value)
-				}
+		if field == "type" {
+			switch node.GetOperator() {
+			case EqualOperator:
+				match = token.Type == GetTokenType(value)
+			case NotLikeOperator:
+				match = token.Type.String() == value
 			}
-			return match
+		} else if field == "data" {
+			data := strings.ToLower(token.Data)
+			value = strings.ReplaceAll(value, "%", "")
+			// TODO: like operator logic
+			switch node.GetOperator() {
+			case EqualOperator:
+				if value == "*" {
+					match = true
+				} else {
+					match = data == value
+				}
+			case LikeOperator:
+				match = strings.Contains(data, value)
+			case NotLikeOperator:
+				match = !strings.Contains(data, value)
+			}
 		}
-		match = t.Match(node.Left, token)
+		return match
+	}
 
-		if node.GetOperator() == AndOperator {
-			match = match && t.Match(node.Right, token)
-		} else if node.GetOperator() == OrOperator {
-			match = match || t.Match(node.Right, token)
-		} else {
-			// TODO
-		}
+	leftMatch := t.Match(node.Left, token)
+	rightMatch := t.Match(node.Right, token)
 
+	if node.GetOperator() == AndOperator {
+		match = leftMatch && rightMatch
+	} else if node.GetOperator() == OrOperator {
+		match = leftMatch || rightMatch
 	}
 
 	return match
