@@ -31,31 +31,34 @@ func (e *Engine) Solve(query *model.Query) {
 	switch query.QueryType {
 	case model.SelectType:
 		results := e.selectTokens(source, query)
-		show(results)
+		show(query.Fields, results)
 	case model.CreateType:
 		url := query.Url
 		schedule := query.Schedule
-		e.createSource(source, url, schedule)
+		go e.createSource(source, url, schedule)
 	}
 }
 
-func show(results []*model.Token) {
+func show(fields *common.StringSlice, results []*model.Token) {
 	if len(results) == 0 {
 		fmt.Println("no results!")
 	} else {
 		// TODO: pretty format
-		//fmt.Println("Type  ||  Data ||  Href")
+		fmt.Println("---------------------------")
 		for _, token := range results {
 			attribute, exists := storage.GetAttribute(token.Attributes, "href")
-			if exists {
-				fmt.Println("---------------------------")
+			if fields.Contains(model.TypeField) {
 				fmt.Printf("Type:  %s\n", token.Type)
-				fmt.Printf("Data:  %s\n", token.Data)
-				fmt.Printf("Link:  %s\n", attribute.Value)
-				fmt.Println("---------------------------")
-			} else {
-				//fmt.Printf("%s  ||  %s\n", token.Type, token.Data)
 			}
+			if fields.Contains(model.DataField) {
+				fmt.Printf("Data:  %s\n", token.Data)
+			}
+			if exists {
+				if fields.Contains(model.HrefField) {
+					fmt.Printf("Link:  %s\n", attribute.Value)
+				}
+			}
+			fmt.Println("---------------------------")
 
 		}
 	}
@@ -170,6 +173,7 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 			query = &model.Query{
 				Source:     sourceBuffer.String(),
 				QueryType:  model.SelectType,
+				Fields:     common.NewStringSlice(fields...),
 				Distinct:   strings.HasPrefix(queryInput, "select distinct"),
 				Expression: expression,
 			}

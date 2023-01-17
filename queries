@@ -49,9 +49,14 @@ CREATE SOURCE planet FROM 'https://www.planet.com/pulse/' WHEN '*/5 * * * *';
 SELECT DISTINCT token, data FROM planet WHERE type ='text' AND data LIKE '%earth%' AND data NOT LIKE '%<img%';
 
 CREATE SOURCE planet FROM 'https://www.planet.com/pulse/planet-accelerates-deployment-of-forest-carbon-monitoring-system/' WHEN '*/5 * * * *';
-SELECT DISTINCT token, data FROM planet WHERE type ='text' AND data LIKE '%earth%' AND data NOT LIKE '%<img%';
+SELECT DISTINCT data, href FROM planet WHERE type ='text' AND data LIKE '%earth%' AND data NOT LIKE '%<img%';
+SELECT DISTINCT data FROM planet WHERE type ='text' AND data LIKE '%earth%' AND data NOT LIKE '%<img%';
 
 
+CREATE SOURCE earth FROM 'https://earth.org/environmental-issues-in-south-america/' WHEN '*/5 * * * *';
+SELECT DISTINCT data, href FROM earth WHERE type ='text' AND data = '*' AND data NOT LIKE '%<img%';
+SELECT DISTINCT data, href FROM earth WHERE type ='text' AND data = '*' AND data NOT LIKE '%jQuery(document)%';
+SELECT DISTINCT data, href FROM earth WHERE type ='text' AND data = '*' AND data NOT LIKE '%<img%' AND data NOT LIKE '%jQuery(document)%';
 
 SELECT token, some FROM earth WHERE type ='text' AND data = 'climate';
 SELECT token, some FROM earth WHERE type ='text' AND data = 'climate' AND data NOT LIKE '%<img%';
