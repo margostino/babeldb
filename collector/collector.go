@@ -44,7 +44,7 @@ func parse(text string) []*model.Token {
 		tokenType := tkn.Next()
 		currentToken := tkn.Token()
 
-		if isValidTokenType(tokenType) && isValidData(currentToken) {
+		if isValidTokenType(tokenType) && !shouldFilter(&currentToken) {
 			attrs := make([]*model.Attribute, 0)
 			for _, attr := range currentToken.Attr {
 				att := &model.Attribute{
@@ -70,8 +70,4 @@ func parse(text string) []*model.Token {
 
 func isValidTokenType(tokenType html.TokenType) bool {
 	return tokenType == html.StartTagToken || tokenType == html.SelfClosingTagToken || tokenType == html.TextToken
-}
-
-func isValidData(token html.Token) bool {
-	return !strings.Contains(token.Data, "\n")
 }

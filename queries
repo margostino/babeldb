@@ -54,6 +54,8 @@ SELECT DISTINCT data FROM planet WHERE type ='text' AND data LIKE '%earth%' AND 
 
 
 CREATE SOURCE earth FROM 'https://earth.org/environmental-issues-in-south-america/' WHEN '*/5 * * * *';
+SELECT DISTINCT data, href FROM earth WHERE type ='text' AND data = '*';
+SELECT DISTINCT data, href FROM earth WHERE type ='text' AND data LIKE 'X';
 SELECT DISTINCT data, href FROM earth WHERE type ='text' AND data = '*' AND data NOT LIKE '%<img%' AND data NOT LIKE '%jQuery%' AND data NOT LIKE '%@font-face%' AND data NOT LIKE '%<style%' AND data NOT LIKE '%<link%';
 SELECT DISTINCT data, href FROM earth WHERE type ='text' AND data = '*' AND data NOT LIKE '%<img%';
 SELECT DISTINCT data, href FROM earth WHERE type ='text' AND data = '*' AND data NOT LIKE '%jQuery(document)%';
