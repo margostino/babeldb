@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+func isValidTokenType(tokenType html.TokenType) bool {
+	return tokenType == html.StartTagToken || tokenType == html.SelfClosingTagToken || tokenType == html.TextToken
+}
+
 // TODO: redefine, not hardcode rules, build the dom(?) and smartly delete components like styles (?)
 func shouldFilter(token *html.Token) bool {
 	data := common.NewString(token.Data).
@@ -13,10 +17,6 @@ func shouldFilter(token *html.Token) bool {
 		ReplaceAll("\t", "").
 		TrimSpace().
 		Value()
-
-	if strings.Contains(data, "Our best stories direct to your inbox every fortnight.") {
-		println("")
-	}
 
 	//for _, e := range token.Attr {
 	//	if strings.Contains(e.Val, "https://www.linkedin.com/shareArticle?mini") {

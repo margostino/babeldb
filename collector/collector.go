@@ -28,46 +28,30 @@ func (c *Collector) Collect() {
 		text, err := ioutil.ReadAll(res.Body)
 
 		if !common.IsError(err, fmt.Sprintf("error when parsing response from %s", url)) {
-			tokens := parse(string(text))
-			c.source.Tokens = tokens
+			c.parse(string(text))
 		}
 	}
 
 }
 
-func parse(text string) []*model.Token {
-
-	var tokens = make([]*model.Token, 0)
-	tkn := html.NewTokenizer(strings.NewReader(text))
+func (c *Collector) parse(text string) {
+	extractor := newExtractor()
+	tokenizer := html.NewTokenizer(strings.NewReader(text))
 
 	for {
-		tokenType := tkn.Next()
-		currentToken := tkn.Token()
+		tokenizer.Next()
+		token := tokenizer.Token()
 
-		if isValidTokenType(tokenType) && !shouldFilter(&currentToken) {
-			attrs := make([]*model.Attribute, 0)
-			for _, attr := range currentToken.Attr {
-				att := &model.Attribute{
-					Key:   attr.Key,
-					Value: attr.Val,
-				}
-				attrs = append(attrs, att)
-			}
-			token := &model.Token{
-				Type:       tokenType,
-				Data:       currentToken.Data,
-				Attributes: attrs,
-			}
-			tokens = append(tokens, token)
-		}
+		extractor.start(&token)
+		extractor.addMeta(&token)
+		extractor.addText(&token)
+		extractor.addSection(&token)
+		extractor.addLink(c.source.Url, &token)
 
-		if tokenType == html.ErrorToken {
-			return tokens
+		if token.Type == html.ErrorToken {
+			c.source.Page = extractor.Page
+			return
 		}
 
 	}
-}
-
-func isValidTokenType(tokenType html.TokenType) bool {
-	return tokenType == html.StartTagToken || tokenType == html.SelfClosingTagToken || tokenType == html.TextToken
 }

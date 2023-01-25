@@ -50,9 +50,9 @@ type Token struct {
 }
 
 type Source struct {
-	Name   string
-	Url    string
-	Tokens []*Token
+	Name string
+	Url  string
+	Page *Page
 }
 
 type ExpressionTree struct {
@@ -87,4 +87,23 @@ func (q *Query) InOrderPrint() {
 
 func (q *Query) Match(token *Token) bool {
 	return q.Expression.Match(q.Expression.Root, token)
+}
+
+type Attributes struct {
+	attributes []html.Attribute
+}
+
+func NewAttributes(attributes []html.Attribute) *Attributes {
+	return &Attributes{
+		attributes: attributes,
+	}
+}
+
+func (s *Attributes) Get(key string) string {
+	for _, attribute := range s.attributes {
+		if attribute.Key == key {
+			return attribute.Val
+		}
+	}
+	return ""
 }
