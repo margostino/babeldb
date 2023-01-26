@@ -39,10 +39,10 @@ func (c *Collector) parse(text string) {
 	tokenizer := html.NewTokenizer(strings.NewReader(text))
 
 	for {
-		tokenizer.Next()
+		_ = tokenizer.Next()
 		token := tokenizer.Token()
 
-		extractor.start(&token)
+		extractor.flag(&token)
 		extractor.addMeta(&token)
 		extractor.addText(&token)
 		extractor.addSection(&token)

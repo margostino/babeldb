@@ -5,8 +5,6 @@ import (
 	"github.com/margostino/babeldb/model"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
-	"log"
-	"net/url"
 	"strings"
 )
 
@@ -33,26 +31,36 @@ func newExtractor() *Extractor {
 			Meta:     meta,
 			Sections: make([]*model.Section, 0),
 		},
-		section: &model.Section{
-			Links: make([]string, 0),
-		},
+		section: newSection(),
+	}
+}
+
+func newSection() *model.Section {
+	return &model.Section{
+		Links: make([]string, 0),
 	}
 }
 
 func (e *Extractor) addSection(token *html.Token) {
-	if !e.flags.isSectionToken && token.DataAtom == atom.Div && token.Type == html.StartTagToken {
+	if !e.flags.isSectionToken && token.DataAtom == atom.Div && isStartToken(token) {
 		e.flags.isSectionToken = true
 	}
-	if e.flags.isSectionToken && token.DataAtom == atom.Div && token.Type == html.EndTagToken {
+	if e.flags.isSectionToken && token.DataAtom == atom.Div && isEndToken(token) {
 		e.flags.isSectionToken = false
 		e.section.Text = sanitize(e.section.Text)
-		e.Page.AddSection(e.section)
+		if e.section.Text != "" || len(e.section.Links) > 0 {
+			e.Page.AddSection(e.section)
+		}
+		e.section = newSection()
 	}
 }
 
 func (e *Extractor) addMeta(token *html.Token) {
-	e.Page.Meta.Title = e.getText(token)
-	if token.DataAtom == atom.Meta && token.Type == html.StartTagToken {
+	if e.flags.isTitleToken && token.Type == html.TextToken {
+		e.flags.isTitleToken = false
+		e.Page.Meta.Title = token.Data
+	}
+	if token.DataAtom == atom.Meta && isStartToken(token) {
 		content := e.attributes.Get("content")
 		if e.attributes.Get("name") == "description" {
 			e.Page.Meta.Description = content
@@ -76,14 +84,6 @@ func (e *Extractor) addMeta(token *html.Token) {
 		}
 	}
 
-}
-
-func (e *Extractor) getText(token *html.Token) string {
-	if e.flags.isTitleToken && token.Type == html.TextToken {
-		e.flags.isTitleToken = false
-		return token.Data
-	}
-	return ""
 }
 
 func (e *Extractor) addText(token *html.Token) {
@@ -115,29 +115,23 @@ func (e *Extractor) addLink(url string, token *html.Token) {
 }
 
 func (e *Extractor) mark(token *html.Token) {
-	if token.DataAtom == atom.P && token.Type == html.StartTagToken {
+	if token.DataAtom == atom.P {
 		e.flags.isParagraphToken = true
 	}
-	if token.DataAtom == atom.Span && token.Type == html.StartTagToken {
+	if token.DataAtom == atom.Title {
+		e.flags.isTitleToken = true
+	}
+	if token.DataAtom == atom.Span {
 		e.flags.isSpanToken = true
 	}
-	if (token.DataAtom == atom.H1 || token.DataAtom == atom.H2 || token.DataAtom == atom.H3 || token.DataAtom == atom.H4 || token.DataAtom == atom.H5) && token.Type == html.StartTagToken {
+	if token.DataAtom == atom.H1 || token.DataAtom == atom.H2 || token.DataAtom == atom.H3 || token.DataAtom == atom.H4 || token.DataAtom == atom.H5 || token.DataAtom == atom.H6 {
 		e.flags.isHeadlineToken = true
 	}
 }
 
-func (e *Extractor) start(token *html.Token) {
+func (e *Extractor) flag(token *html.Token) {
 	e.attributes = model.NewAttributes(token.Attr)
-	if token.Type == html.StartTagToken {
+	if isStartToken(token) {
 		e.mark(token)
 	}
-}
-
-func getHostname(href string) string {
-	url, err := url.Parse(href)
-	if err != nil {
-		log.Fatal(err)
-	}
-	hostname := strings.TrimPrefix(url.Hostname(), "www.")
-	return hostname
 }
