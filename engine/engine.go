@@ -53,6 +53,9 @@ func show(fields *common.StringSlice, sources []*model.Source) {
 			if fields.Contains(model.SourceUrl) || fields.Contains(model.Wildcard) {
 				fmt.Printf("URL:  %s\n", source.Url)
 			}
+			if fields.Contains(model.SourceLastUpdate) || fields.Contains(model.Wildcard) {
+				fmt.Printf("Last update:  %s\n", source.LastUpdate)
+			}
 			if fields.Contains(model.SourceMetaTitle) || fields.Contains(model.Wildcard) {
 				fmt.Printf("Title:  %s\n", source.Page.Meta.Title)
 			}

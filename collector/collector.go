@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type Collector struct {
@@ -50,6 +51,7 @@ func (c *Collector) parse(text string) {
 
 		if token.Type == html.ErrorToken {
 			c.source.Page = extractor.Page
+			c.source.LastUpdate = time.Now().UTC()
 			return
 		}
 

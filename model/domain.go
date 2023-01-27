@@ -3,6 +3,7 @@ package model
 import (
 	"github.com/margostino/babeldb/common"
 	"golang.org/x/net/html"
+	"time"
 )
 
 type Operator int32
@@ -17,6 +18,7 @@ const (
 	HrefField             string = "href"
 	SourceName            string = "name"
 	SourceUrl             string = "url"
+	SourceLastUpdate      string = "last_update"
 	SourceMetaTitle       string = "title"
 	SourceMetaDescription string = "description"
 	SourceMetaTwitter     string = "twitter"
@@ -61,9 +63,10 @@ type Token struct {
 }
 
 type Source struct {
-	Name string
-	Url  string
-	Page *Page
+	Name       string
+	Url        string
+	Page       *Page
+	LastUpdate time.Time
 }
 
 type ExpressionTree struct {

@@ -106,9 +106,6 @@ func (e *Extractor) addLink(url string, token *html.Token) {
 		href := e.attributes.Get("href")
 		hostname := getHostname(url)
 		if href != "" && strings.Contains(href, hostname) {
-			if strings.Contains(href, "members.earth.org") {
-				println()
-			}
 			e.section.AddLink(href)
 		}
 	}
