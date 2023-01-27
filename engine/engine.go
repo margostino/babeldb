@@ -44,7 +44,7 @@ func show(fields *common.StringSlice, sources []*model.Source) {
 		fmt.Println("no results!")
 	} else {
 		// TODO: pretty format
-		fmt.Println("---------------------------")
+		fmt.Println("\n---------------------------")
 		for _, source := range sources {
 			//attribute, exists := storage.GetAttribute(token.Attributes, "href")
 			if fields.Contains(model.SourceName) || fields.Contains(model.Wildcard) {
@@ -54,19 +54,22 @@ func show(fields *common.StringSlice, sources []*model.Source) {
 				fmt.Printf("URL:  %s\n", source.Url)
 			}
 			if fields.Contains(model.SourceLastUpdate) || fields.Contains(model.Wildcard) {
-				fmt.Printf("Last update:  %s\n", source.LastUpdate)
+				fmt.Printf("Last update: %s\n", source.LastUpdate)
 			}
 			if fields.Contains(model.SourceMetaTitle) || fields.Contains(model.Wildcard) {
-				fmt.Printf("Title:  %s\n", source.Page.Meta.Title)
+				fmt.Printf("Title: %s\n", source.Page.Meta.Title)
 			}
 			if fields.Contains(model.SourceMetaDescription) || fields.Contains(model.Wildcard) {
-				fmt.Printf("Description:  %s\n", source.Page.Meta.Description)
+				fmt.Printf("Description: %s\n", source.Page.Meta.Description)
 			}
 			if fields.Contains(model.SourceMetaTwitter) || fields.Contains(model.Wildcard) {
-				fmt.Printf("Twitter:  %s\n", source.Page.Meta.Twitter)
+				fmt.Printf("Twitter: %s\n", source.Page.Meta.Twitter)
 			}
 			if fields.Contains(model.SourceMetaLocale) || fields.Contains(model.Wildcard) {
-				fmt.Printf("Locale:  %s\n", source.Page.Meta.Locale)
+				fmt.Printf("Locale: %s\n", source.Page.Meta.Locale)
+			}
+			if fields.Contains(model.SourceTotalSections) || fields.Contains(model.Wildcard) {
+				fmt.Printf("Total sections: %d\n", len(source.Page.Sections))
 			}
 			//if fields.Contains(model.SourcePageText) {
 			//	fmt.Printf("Locale:  %s\n", source.Page.)

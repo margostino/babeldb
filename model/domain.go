@@ -18,6 +18,7 @@ const (
 	HrefField             string = "href"
 	SourceName            string = "name"
 	SourceUrl             string = "url"
+	SourceTotalSections   string = "total_sections"
 	SourceLastUpdate      string = "last_update"
 	SourceMetaTitle       string = "title"
 	SourceMetaDescription string = "description"
@@ -29,8 +30,25 @@ const (
 	Sources               string = "sources"
 )
 
-var Fields = common.NewStringSlice(TypeField, DataField, TokenField, HrefField, Wildcard)
 var AttributeFields = common.NewStringSlice(HrefField)
+var Fields = common.NewStringSlice(
+	SourceName,
+	SourceUrl,
+	SourceTotalSections,
+	SourceLastUpdate,
+	SourceMetaTitle,
+	SourceMetaDescription,
+	SourceMetaTwitter,
+	SourceMetaLocale,
+	SourcePageText,
+	SourcePageLinks,
+	SourcePageLink,
+	TypeField,
+	DataField,
+	TokenField,
+	HrefField,
+	Wildcard,
+)
 
 const (
 	EqualOperator Operator = iota
