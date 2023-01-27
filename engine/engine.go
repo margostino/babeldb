@@ -30,7 +30,7 @@ func (e *Engine) Solve(query *model.Query) {
 	source := query.Source
 	switch query.QueryType {
 	case model.SelectType:
-		results := e.selectTokens(source, query)
+		results := e.storage.Select(source, query)
 		show(query.Fields, results)
 	case model.CreateType:
 		url := query.Url
@@ -39,28 +39,41 @@ func (e *Engine) Solve(query *model.Query) {
 	}
 }
 
-func show(fields *common.StringSlice, results []*model.Token) {
-	if len(results) == 0 {
+func show(fields *common.StringSlice, sources []*model.Source) {
+	if len(sources) == 0 {
 		fmt.Println("no results!")
 	} else {
 		// TODO: pretty format
 		fmt.Println("---------------------------")
-		for _, token := range results {
-			attribute, exists := storage.GetAttribute(token.Attributes, "href")
-			if len(token.Data) == 2 {
-				println("")
+		for _, source := range sources {
+			//attribute, exists := storage.GetAttribute(token.Attributes, "href")
+			if fields.Contains(model.SourceName) || fields.Contains(model.Wildcard) {
+				fmt.Printf("Name:  %s\n", source.Name)
 			}
-			if fields.Contains(model.TypeField) {
-				fmt.Printf("Type:  %s\n", token.Type)
+			if fields.Contains(model.SourceUrl) || fields.Contains(model.Wildcard) {
+				fmt.Printf("URL:  %s\n", source.Url)
 			}
-			if fields.Contains(model.DataField) {
-				fmt.Printf("Data:  %s\n", token.Data)
+			if fields.Contains(model.SourceMetaTitle) || fields.Contains(model.Wildcard) {
+				fmt.Printf("Title:  %s\n", source.Page.Meta.Title)
 			}
-			if exists {
-				if fields.Contains(model.HrefField) {
-					fmt.Printf("Link:  %s\n", attribute.Value)
-				}
+			if fields.Contains(model.SourceMetaDescription) || fields.Contains(model.Wildcard) {
+				fmt.Printf("Description:  %s\n", source.Page.Meta.Description)
 			}
+			if fields.Contains(model.SourceMetaTwitter) || fields.Contains(model.Wildcard) {
+				fmt.Printf("Twitter:  %s\n", source.Page.Meta.Twitter)
+			}
+			if fields.Contains(model.SourceMetaLocale) || fields.Contains(model.Wildcard) {
+				fmt.Printf("Locale:  %s\n", source.Page.Meta.Locale)
+			}
+			//if fields.Contains(model.SourcePageText) {
+			//	fmt.Printf("Locale:  %s\n", source.Page.)
+			//}
+
+			//if exists {
+			//	if fields.Contains(model.HrefField) {
+			//		fmt.Printf("Link:  %s\n", attribute.Value)
+			//	}
+			//}
 			fmt.Println("---------------------------")
 		}
 	}
@@ -82,10 +95,6 @@ func (e *Engine) createSource(name string, url string, schedule string) {
 	collector.Collect()
 	job.AddFunc(schedule, collector.Collect)
 	job.Start()
-}
-
-func (e *Engine) selectTokens(sourceName string, query *model.Query) []*model.Token {
-	return e.storage.SelectTokens(sourceName, query)
 }
 
 func (e *Engine) Parse(input string) (*model.Query, error) {
@@ -124,7 +133,9 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 			sourceBuffer := sqlparser.NewTrackedBuffer(nil)
 			selectBuffer := sqlparser.NewTrackedBuffer(nil)
 
-			stmt.Where.Expr.Format(whereBuffer)
+			if whereBuffer.Buffer.Len() > 0 {
+				stmt.Where.Expr.Format(whereBuffer)
+			}
 			stmt.SelectExprs.Format(selectBuffer)
 			stmt.From.Format(sourceBuffer)
 
@@ -141,10 +152,13 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 			}
 
 			//conditions := strings.Split(whereBuffer.String(), " and ")
-			tokens := common.NewString(whereBuffer.String()).
-				ReplaceAll("not like", "not_like").
-				Split(" ").
-				Values()
+			var tokens []string
+			if whereBuffer.Buffer.Len() > 0 {
+				tokens = common.NewString(whereBuffer.String()).
+					ReplaceAll("not like", "not_like").
+					Split(" ").
+					Values()
+			}
 
 			var expression = &model.ExpressionTree{
 				Root: nil,

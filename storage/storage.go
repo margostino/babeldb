@@ -28,8 +28,24 @@ func GetAttribute(attributes []*model.Attribute, key string) (*model.Attribute, 
 	return nil, false
 }
 
-func (s *Storage) SelectTokens(name string, query *model.Query) []*model.Token {
-	results := make([]*model.Token, 0)
+func (s *Storage) SelectSources(query *model.Query) map[string]*model.Source {
+	// TODO
+	return s.sources
+}
+
+func (s *Storage) Select(name string, query *model.Query) []*model.Source {
+	results := make([]*model.Source, 0)
+
+	if name == model.Sources {
+		for _, source := range s.sources {
+			results = append(results, source)
+		}
+	} else if s.sources[name] != nil {
+
+	} else {
+		fmt.Println("source name not found!")
+	}
+
 	if s.sources[name] != nil {
 		//var attribute *model.Attribute
 		//for _, token := range s.sources[name].Tokens {
@@ -62,8 +78,6 @@ func (s *Storage) SelectTokens(name string, query *model.Query) []*model.Token {
 		//		}
 		//	}
 		//}
-	} else {
-		fmt.Println("source name not found!")
 	}
 
 	return results

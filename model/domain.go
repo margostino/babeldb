@@ -10,13 +10,24 @@ type Type int32
 type QueryType int32
 
 const (
-	TypeField  string = "type"
-	DataField  string = "data"
-	TokenField string = "token"
-	HrefField  string = "href"
+	Wildcard              string = "*"
+	TypeField             string = "type"
+	DataField             string = "data"
+	TokenField            string = "token"
+	HrefField             string = "href"
+	SourceName            string = "name"
+	SourceUrl             string = "url"
+	SourceMetaTitle       string = "title"
+	SourceMetaDescription string = "description"
+	SourceMetaTwitter     string = "twitter"
+	SourceMetaLocale      string = "locale"
+	SourcePageText        string = "text"
+	SourcePageLinks       string = "links"
+	SourcePageLink        string = "link"
+	Sources               string = "sources"
 )
 
-var Fields = common.NewStringSlice(TypeField, DataField, TokenField, HrefField)
+var Fields = common.NewStringSlice(TypeField, DataField, TokenField, HrefField, Wildcard)
 var AttributeFields = common.NewStringSlice(HrefField)
 
 const (
@@ -81,14 +92,6 @@ type Query struct {
 	Expression *ExpressionTree
 }
 
-func (q *Query) InOrderPrint() {
-	q.Expression.InOrderPrint(q.Expression.Root)
-}
-
-func (q *Query) Match(token *Token) bool {
-	return q.Expression.Match(q.Expression.Root, token)
-}
-
 type Attributes struct {
 	attributes []html.Attribute
 }
@@ -97,6 +100,14 @@ func NewAttributes(attributes []html.Attribute) *Attributes {
 	return &Attributes{
 		attributes: attributes,
 	}
+}
+
+func (q *Query) InOrderPrint() {
+	q.Expression.InOrderPrint(q.Expression.Root)
+}
+
+func (q *Query) Match(token *Token) bool {
+	return q.Expression.Match(q.Expression.Root, token)
 }
 
 func (s *Attributes) Get(key string) string {

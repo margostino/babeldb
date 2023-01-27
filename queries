@@ -54,6 +54,7 @@ SELECT DISTINCT data FROM planet WHERE type ='text' AND data LIKE '%earth%' AND 
 
 CREATE SOURCE earth FROM 'https://earth.org' WHEN '*/5 * * * *';
 CREATE SOURCE planet FROM 'https://www.planet.com/pulse/' WHEN '*/5 * * * *';
+SELECT * FROM sources;
 
 CREATE SOURCE earth FROM 'https://earth.org/environmental-issues-in-south-america/' WHEN '*/5 * * * *';
 SELECT DISTINCT data, href FROM earth WHERE type ='text' AND data = '*';
