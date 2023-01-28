@@ -3,7 +3,7 @@
 ⚠️ BabelDB is an ongoing experimentation project.
 
 **BabelDB** is an in-memory Website Database. BabelDB combines a programmatic data extraction engine with scheduling and data clustering. It offers a standard and lightweight SQL syntax and a powerful DSL for querying, searching and information retrieval.
-**BabelDB** continuously ingests data from any pre-defined web source and allow you to use standard SQL to query that data. It includes BabelQL, a Query Language built on top of the engine to provide to search capabilities such as full-text search, term and phrase matching, regex and more.
+**BabelDB** continuously ingests data from any pre-defined web source and allows you to query data with standard SQL. Also it provides its own query language: BabelQL, built on top of the engine to provide search capabilities such as full-text search, term and phrase matching, regex and more.
 
 ## Features
 
