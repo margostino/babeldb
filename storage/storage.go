@@ -33,22 +33,28 @@ func (s *Storage) SelectSources(query *model.Query) map[string]*model.Source {
 	return s.sources
 }
 
-func (s *Storage) Select(name string, query *model.Query) []*model.Source {
-	results := make([]*model.Source, 0)
-
-	if name == model.Sources {
-		for _, source := range s.sources {
-			results = append(results, source)
-		}
-	} else if s.sources[name] != nil {
-
-	} else {
-		fmt.Println("source name not found!")
+func (s *Storage) Show() []*model.Source {
+	sources := make([]*model.Source, 0)
+	for _, source := range s.sources {
+		sources = append(sources, source)
 	}
+	return sources
+}
+
+func (s *Storage) Select(name string, query *model.Query) []*model.Section {
+	sections := make([]*model.Section, 0)
 
 	if s.sources[name] != nil {
+		source := s.sources[name]
+
+		for _, section := range source.Page.Sections {
+			if query.Match(section) {
+				sections = append(sections, section)
+			}
+		}
 		//var attribute *model.Attribute
-		//for _, token := range s.sources[name].Tokens {
+		//page := s.sources[name].Page
+		//for _, section := range page.Sections {
 		//	data := common.NewString(token.Data).TrimSpace().Value()
 		//	if len(token.Attributes) > 0 {
 		//		newAttribute, _ := GetAttribute(token.Attributes, "href")
@@ -78,7 +84,9 @@ func (s *Storage) Select(name string, query *model.Query) []*model.Source {
 		//		}
 		//	}
 		//}
+	} else {
+		fmt.Println("source name not found!")
 	}
 
-	return results
+	return sections
 }

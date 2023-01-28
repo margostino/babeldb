@@ -30,8 +30,11 @@ func (e *Engine) Solve(query *model.Query) {
 	source := query.Source
 	switch query.QueryType {
 	case model.SelectType:
-		results := e.storage.Select(source, query)
-		show(query.Fields, results)
+		sections := e.storage.Select(source, query)
+		showPage(query.Fields, sections)
+	case model.ShowSources:
+		sources := e.storage.Show()
+		showSources(sources)
 	case model.CreateType:
 		url := query.Url
 		schedule := query.Schedule
@@ -39,49 +42,48 @@ func (e *Engine) Solve(query *model.Query) {
 	}
 }
 
-func show(fields *common.StringSlice, sources []*model.Source) {
+func showSources(sources []*model.Source) {
 	if len(sources) == 0 {
 		fmt.Println("no results!")
 	} else {
 		// TODO: pretty format
-		fmt.Println("\n---------------------------")
+		fmt.Println()
+		fmt.Println("---------------------------")
 		for _, source := range sources {
-			//attribute, exists := storage.GetAttribute(token.Attributes, "href")
-			if fields.Contains(model.SourceName) || fields.Contains(model.Wildcard) {
-				fmt.Printf("Name:  %s\n", source.Name)
-			}
-			if fields.Contains(model.SourceUrl) || fields.Contains(model.Wildcard) {
-				fmt.Printf("URL:  %s\n", source.Url)
-			}
-			if fields.Contains(model.SourceLastUpdate) || fields.Contains(model.Wildcard) {
-				fmt.Printf("Last update: %s\n", source.LastUpdate)
-			}
-			if fields.Contains(model.SourceMetaTitle) || fields.Contains(model.Wildcard) {
-				fmt.Printf("Title: %s\n", source.Page.Meta.Title)
-			}
-			if fields.Contains(model.SourceMetaDescription) || fields.Contains(model.Wildcard) {
-				fmt.Printf("Description: %s\n", source.Page.Meta.Description)
-			}
-			if fields.Contains(model.SourceMetaTwitter) || fields.Contains(model.Wildcard) {
-				fmt.Printf("Twitter: %s\n", source.Page.Meta.Twitter)
-			}
-			if fields.Contains(model.SourceMetaLocale) || fields.Contains(model.Wildcard) {
-				fmt.Printf("Locale: %s\n", source.Page.Meta.Locale)
-			}
-			if fields.Contains(model.SourceTotalSections) || fields.Contains(model.Wildcard) {
-				fmt.Printf("Total sections: %d\n", len(source.Page.Sections))
-			}
-			//if fields.Contains(model.SourcePageText) {
-			//	fmt.Printf("Locale:  %s\n", source.Page.)
-			//}
-
-			//if exists {
-			//	if fields.Contains(model.HrefField) {
-			//		fmt.Printf("Link:  %s\n", attribute.Value)
-			//	}
-			//}
+			fmt.Printf("Name:  %s\n", source.Name)
+			fmt.Printf("URL:  %s\n", source.Url)
+			fmt.Printf("Last update: %s\n", source.LastUpdate)
+			fmt.Printf("Title: %s\n", source.Page.Meta.Title)
+			fmt.Printf("Description: %s\n", source.Page.Meta.Description)
+			fmt.Printf("Twitter: %s\n", source.Page.Meta.Twitter)
+			fmt.Printf("Locale: %s\n", source.Page.Meta.Locale)
+			fmt.Printf("Total sections: %d\n", len(source.Page.Sections))
 			fmt.Println("---------------------------")
 		}
+		fmt.Println()
+	}
+}
+
+func showPage(fields *common.StringSlice, sections []*model.Section) {
+	if len(sections) == 0 {
+		fmt.Println("no results!")
+	} else {
+		// TODO: pretty format
+		fmt.Println()
+		fmt.Println("\n---------------------------")
+		for _, section := range sections {
+			if fields.Contains(model.SourcePageText) || fields.Contains(model.Wildcard) {
+				fmt.Printf("Text:  %s\n", section.Text)
+			}
+			if fields.Contains(model.SourcePageLinks) || fields.Contains(model.Wildcard) {
+				fmt.Printf("Links:  %s\n", section.Links)
+			}
+			if fields.Contains(model.SourcePageLink) || fields.Contains(model.Wildcard) {
+				fmt.Printf("Last update: %s\n", section.Links)
+			}
+			fmt.Println("---------------------------")
+		}
+		fmt.Println()
 	}
 }
 
@@ -109,6 +111,14 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 	var bindVars = make(map[string]*querypb.BindVariable)
 	var params = make(map[string]*model.ExpressionNode, 0)
 
+	if input == "show sources" {
+		query = &model.Query{
+			Source:    model.Wildcard,
+			QueryType: model.ShowSources,
+		}
+		return query, nil
+	}
+
 	if strings.HasPrefix(input, "create source") {
 		parts := common.NewString(input).
 			ReplaceAll("create source", "").
@@ -135,18 +145,22 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 	if !common.IsError(err, "when parsing SQL input") {
 		switch stmt := statement.(type) {
 		case *sqlparser.Select:
+			var whereClauses string
 			whereBuffer := sqlparser.NewTrackedBuffer(nil)
 			sourceBuffer := sqlparser.NewTrackedBuffer(nil)
 			selectBuffer := sqlparser.NewTrackedBuffer(nil)
 
-			if whereBuffer.Buffer.Len() > 0 {
-				stmt.Where.Expr.Format(whereBuffer)
-			}
 			stmt.SelectExprs.Format(selectBuffer)
 			stmt.From.Format(sourceBuffer)
 
+			if stmt.Where.Expr != nil {
+				stmt.Where.Expr.Format(whereBuffer)
+				whereClauses = whereBuffer.String()
+			}
+
 			fields := common.NewString(selectBuffer.String()).
 				ReplaceAll(" ", "").
+				ReplaceAll("`", "").
 				Split(",").
 				Values()
 
@@ -159,9 +173,10 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 
 			//conditions := strings.Split(whereBuffer.String(), " and ")
 			var tokens []string
-			if whereBuffer.Buffer.Len() > 0 {
-				tokens = common.NewString(whereBuffer.String()).
+			if whereClauses != "" {
+				tokens = common.NewString(whereClauses).
 					ReplaceAll("not like", "not_like").
+					ReplaceAll("`", "").
 					Split(" ").
 					Values()
 			}
@@ -180,15 +195,9 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 			}
 
 			for key, bindVar := range bindVars {
-				if params[key].GetType() == model.TokenType {
-					tokenType := model.GetTokenType(string(bindVar.Value))
-					params[key].Key.Type = model.GetTokenTypeFrom(tokenType)
-					params[key].Key.Value = string(bindVar.Value)
-				} else {
-					params[key].Key.Value = string(bindVar.Value)
-					if bindVar.Type == querypb.Type_VARBINARY {
-						params[key].Key.Type = model.StringType
-					}
+				params[key].Key.Value = string(bindVar.Value)
+				if bindVar.Type == querypb.Type_VARBINARY {
+					params[key].Key.Type = model.StringType
 				}
 			}
 

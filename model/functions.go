@@ -30,41 +30,31 @@ func (t *ExpressionTree) GetParamNode(node *ExpressionNode) *ExpressionNode {
 	return t.GetParamNode(node.Right)
 }
 
-func (t *ExpressionTree) Match(node *ExpressionNode, token *Token) bool {
+func (t *ExpressionTree) Match(node *ExpressionNode, section *Section) bool {
 	var match bool
 	if node.IsComparisonOperatorNode() {
-		field := node.Left.GetKey()
 		value := node.Right.GetKey()
-
-		if field == "type" {
-			switch node.GetOperator() {
-			case EqualOperator:
-				match = token.Type == GetTokenType(value)
-			case NotLikeOperator:
-				match = token.Type.String() == value
+		text := strings.ToLower(section.Text)
+		value = strings.ReplaceAll(value, "%", "")
+		// TODO: like operator logic
+		switch node.GetOperator() {
+		case EqualOperator:
+			if value == "*" {
+				match = true
+			} else {
+				match = text == value
 			}
-		} else if field == "data" {
-			data := strings.ToLower(token.Data)
-			value = strings.ReplaceAll(value, "%", "")
-			// TODO: like operator logic
-			switch node.GetOperator() {
-			case EqualOperator:
-				if value == "*" {
-					match = true
-				} else {
-					match = data == value
-				}
-			case LikeOperator:
-				match = strings.Contains(data, value)
-			case NotLikeOperator:
-				match = !strings.Contains(data, value)
-			}
+		case LikeOperator:
+			match = strings.Contains(text, value)
+		case NotLikeOperator:
+			match = !strings.Contains(text, value)
 		}
+
 		return match
 	}
 
-	leftMatch := t.Match(node.Left, token)
-	rightMatch := t.Match(node.Right, token)
+	leftMatch := t.Match(node.Left, section)
+	rightMatch := t.Match(node.Right, section)
 
 	if node.GetOperator() == AndOperator {
 		match = leftMatch && rightMatch

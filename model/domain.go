@@ -67,6 +67,7 @@ const (
 	DocTypeTokenType
 	SelectType QueryType = iota
 	CreateType
+	ShowSources
 )
 
 type Attribute struct {
@@ -127,8 +128,8 @@ func (q *Query) InOrderPrint() {
 	q.Expression.InOrderPrint(q.Expression.Root)
 }
 
-func (q *Query) Match(token *Token) bool {
-	return q.Expression.Match(q.Expression.Root, token)
+func (q *Query) Match(section *Section) bool {
+	return q.Expression.Match(q.Expression.Root, section)
 }
 
 func (s *Attributes) Get(key string) string {
