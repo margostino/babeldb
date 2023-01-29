@@ -11,7 +11,7 @@ _“The library will endure; it is the universe. As for us, everything has not b
 
 - [ ] Data collection scheduling
 - [ ] Data clustering
-- [ ] Links tagging
+- [ ] Tag linking
 - [ ] Incrementally updated materialized views
 - [ ] Pattern matching
 - [ ] Deep collection
