@@ -28,7 +28,7 @@ From Wikipedia:
 ...a database is an organized collection of data stored and accessed electronically...
 ```
 
-#### Can Internet as a whole be considered a Database itself?
+#### Can Internet as a whole be considered a Database by itself?
 
 The internet is a vast space of information. Most of the information is free (which does not mean true) and accessible through browsers and search engines and dedicated tooling. Crawler & Scrapper bots are popular ways for automated data collection and indexing. Crawling is essentially what search engines do while scraping is an automated way of extracting specific datasets.
 But when it comes to address a more specific use cases or non-technical users, sometimes this is not enough. 
