@@ -1,5 +1,7 @@
 # BabelDB
 
+_“The library will endure; it is the universe. As for us, everything has not been written; we are not turning into phantoms. We walk the corridors, searching the shelves and rearranging them, looking for lines of meaning amid leagues of cacophony and incoherence, reading the history of the past and our future, collecting our thoughts and collecting the thoughts of others, and every so often glimpsing mirrors, in which we may recognize creatures of the information.”_ ― Jorge Luis Borges, The Library of Babel
+
 ⚠️ BabelDB is an ongoing experimentation project.
 
 **BabelDB** is an in-memory Website Database. BabelDB combines a programmatic data extraction engine with scheduling and data clustering. It offers a standard and lightweight SQL syntax and a powerful DSL for querying, searching and information retrieval.
