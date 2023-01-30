@@ -49,6 +49,7 @@ func (e *Extractor) addSection(token *html.Token) {
 		e.flags.isSectionToken = false
 		e.section.Text = sanitize(e.section.Text)
 		if e.section.Text != "" || len(e.section.Links) > 0 {
+			e.section.Text = sanitizeText(e.section.Text)
 			e.Page.AddSection(e.section)
 		}
 		e.section = newSection()
@@ -131,4 +132,9 @@ func (e *Extractor) flag(token *html.Token) {
 	if isStartToken(token) {
 		e.mark(token)
 	}
+}
+
+func sanitizeText(value string) string {
+	partial := regExpLeadClose.ReplaceAllString(value, "")
+	return regExpInsideClose.ReplaceAllString(partial, " ")
 }

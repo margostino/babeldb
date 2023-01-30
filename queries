@@ -64,7 +64,7 @@ SELECT text FROM earth WHERE text LIKE '%climate%';
 CREATE SOURCE earth FROM 'https://earth.org/environmental-issues-in-south-america/' WHEN '*/5 * * * *';
 
 CREATE SOURCE jobs FROM 'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=software%20engineer&location=sweden&f_TPR=r604800&f_WT=3&start=50' WHEN '*/5 * * * *';
-SELECT * from jobs;
+SELECT * from jobs WHERE text LIKE "%Full stack%";
 
 
 SELECT DISTINCT data, href FROM earth WHERE type ='text' AND data = '*';

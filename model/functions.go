@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"github.com/margostino/babeldb/common"
 	"strings"
 )
 
@@ -33,9 +34,11 @@ func (t *ExpressionTree) GetParamNode(node *ExpressionNode) *ExpressionNode {
 func (t *ExpressionTree) Match(node *ExpressionNode, section *Section) bool {
 	var match bool
 	if node.IsComparisonOperatorNode() {
-		value := node.Right.GetKey()
 		text := strings.ToLower(section.Text)
-		value = strings.ReplaceAll(value, "%", "")
+		value := common.NewString(node.Right.GetKey()).
+			ToLower().
+			ReplaceAll("%", "").
+			Value()
 		// TODO: like operator logic
 		switch node.GetOperator() {
 		case EqualOperator:
