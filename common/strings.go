@@ -20,6 +20,10 @@ func (s *String) ToLower() *String {
 	return s
 }
 
+func (s *String) HasPrefix(prefix string) bool {
+	return strings.HasPrefix(s.value, prefix)
+}
+
 func (s *String) ReplaceAll(old string, new string) *String {
 	s.value = strings.ReplaceAll(s.value, old, new)
 	return s

@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-const URL_SEPARATOR = "@@@"
+const UrlSeparator = "@@@"
 
 type Engine struct {
 	storage *storage.Storage
@@ -26,85 +26,6 @@ func New() *Engine {
 		jobs:    make([]*cron.Cron, 0),
 	}
 
-}
-
-func (e *Engine) Solve(query *model.Query) {
-	source := query.Source
-	switch query.QueryType {
-	case model.SelectType:
-		sections := e.storage.Select(source, query)
-		showPage(query.Fields, sections)
-	case model.ShowSources:
-		sources := e.storage.Show()
-		showSources(sources)
-	case model.CreateType:
-		url := query.Url
-		schedule := query.Schedule
-		go e.createSource(source, url, schedule)
-	}
-}
-
-func showSources(sources []*model.Source) {
-	if len(sources) == 0 {
-		fmt.Println("no results!")
-	} else {
-		// TODO: pretty format
-		fmt.Println()
-		fmt.Println("---------------------------")
-		for _, source := range sources {
-			fmt.Printf("Name:  %s\n", source.Name)
-			fmt.Printf("URL:  %s\n", source.Url)
-			fmt.Printf("Last update: %s\n", source.LastUpdate)
-			fmt.Printf("Title: %s\n", source.Page.Meta.Title)
-			fmt.Printf("Description: %s\n", source.Page.Meta.Description)
-			fmt.Printf("Twitter: %s\n", source.Page.Meta.Twitter)
-			fmt.Printf("Locale: %s\n", source.Page.Meta.Locale)
-			fmt.Printf("Total sections: %d\n", len(source.Page.Sections))
-			fmt.Println("---------------------------")
-		}
-		fmt.Println()
-	}
-}
-
-func showPage(fields *common.StringSlice, sections []*model.Section) {
-	if len(sections) == 0 {
-		fmt.Println("no results!")
-	} else {
-		// TODO: pretty format
-		fmt.Println()
-		fmt.Println("\n---------------------------")
-		for _, section := range sections {
-			if fields.Contains(model.SourcePageText) || fields.Contains(model.Wildcard) {
-				fmt.Printf("Text:  %s\n", section.Text)
-			}
-			if fields.Contains(model.SourcePageLinks) || fields.Contains(model.Wildcard) {
-				fmt.Printf("Links:  %s\n", section.Links)
-			}
-			if fields.Contains(model.SourcePageLink) || fields.Contains(model.Wildcard) {
-				fmt.Printf("Last update: %s\n", section.Links)
-			}
-			fmt.Println("---------------------------")
-		}
-		fmt.Println()
-	}
-}
-
-func (e *Engine) createSource(name string, url string, schedule string) {
-
-	source := &model.Source{
-		Name: name,
-		Url:  url,
-	}
-
-	job := cron.New(cron.WithSeconds())
-	collector := collector.New(source)
-
-	e.jobs = append(e.jobs, job)
-	e.storage.AddSource(source)
-
-	collector.Collect()
-	job.AddFunc(schedule, collector.Collect)
-	job.Start()
 }
 
 func (e *Engine) Parse(input string) (*model.Query, error) {
@@ -121,20 +42,16 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 		return query, nil
 	}
 
-	if strings.HasPrefix(input, "create source") {
+	if shouldCreateSource(input) {
 		parts := common.NewString(input).
-			ReplaceAll("create source", "").
-			ReplaceAll(" from ", URL_SEPARATOR).
-			ReplaceAll(" when ", URL_SEPARATOR).
-			ReplaceAll(";", "").
 			ReplaceAll("'", "").
 			TrimSpace().
-			Split(URL_SEPARATOR).
+			Split(" ").
 			Values()
 
-		name := parts[0]
-		url := parts[1]
-		schedule := parts[2]
+		name := parts[2]
+		url := parts[4]
+		schedule := fmt.Sprintf("%s %s %s %s %s", parts[6], parts[7], parts[8], parts[9], parts[10])
 
 		queryInput = fmt.Sprintf("insert into %s (url, schedule) values ('%s', '%s')", name, url, schedule)
 	} else {
@@ -232,4 +149,80 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 	//}
 
 	return query, err
+}
+
+func (e *Engine) Solve(query *model.Query) {
+	source := query.Source
+	switch query.QueryType {
+	case model.SelectType:
+		sections := e.storage.Select(source, query)
+		showPage(query.Fields, sections)
+	case model.ShowSources:
+		sources := e.storage.Show()
+		showSources(sources)
+	case model.CreateType:
+		url := query.Url
+		schedule := query.Schedule
+		go e.createSource(source, url, schedule)
+	}
+}
+
+func showSources(sources []*model.Source) {
+	if len(sources) == 0 {
+		fmt.Println("no results!")
+	} else {
+		// TODO: pretty format
+		fmt.Println()
+		fmt.Println("---------------------------")
+		for _, source := range sources {
+			fmt.Printf("Name:  %s\n", source.Name)
+			fmt.Printf("URL:  %s\n", source.Url)
+			fmt.Printf("Last update: %s\n", source.LastUpdate)
+			fmt.Printf("Title: %s\n", source.Page.Meta.Title)
+			fmt.Printf("Description: %s\n", source.Page.Meta.Description)
+			fmt.Printf("Twitter: %s\n", source.Page.Meta.Twitter)
+			fmt.Printf("Locale: %s\n", source.Page.Meta.Locale)
+			fmt.Printf("Total sections: %d\n", len(source.Page.Sections))
+			fmt.Println("---------------------------")
+		}
+		fmt.Println()
+	}
+}
+
+func showPage(fields *common.StringSlice, sections []*model.Section) {
+	if len(sections) == 0 {
+		fmt.Println("no results!")
+	} else {
+		// TODO: pretty format
+		fmt.Println()
+		fmt.Println("\n---------------------------")
+		for _, section := range sections {
+			if fields.Contains(model.SourcePageText) || fields.Contains(model.Wildcard) {
+				fmt.Printf("Text:  %s\n", section.Text)
+			}
+			if fields.Contains(model.SourcePageLinks) || fields.Contains(model.Wildcard) {
+				fmt.Printf("Links:  %s\n", section.Links)
+			}
+			fmt.Println("---------------------------")
+		}
+		fmt.Println()
+	}
+}
+
+func (e *Engine) createSource(name string, url string, schedule string) {
+
+	source := &model.Source{
+		Name: name,
+		Url:  url,
+	}
+
+	job := cron.New(cron.WithSeconds())
+	collector := collector.New(source)
+
+	e.jobs = append(e.jobs, job)
+	e.storage.AddSource(source)
+
+	collector.Collect()
+	job.AddFunc(schedule, collector.Collect)
+	job.Start()
 }

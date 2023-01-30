@@ -35,9 +35,9 @@ func (cli *Cli) Start() {
 
 		if normalizedInput == "" {
 			continue
-		} else if !isNewLine && normalizedInput == "help" {
+		} else if !isNewLine && strings.ToLower(normalizedInput) == "help" {
 			cli.help()
-		} else if !isNewLine && normalizedInput == "exit" {
+		} else if !isNewLine && strings.ToLower(normalizedInput) == "exit" {
 			cli.exit()
 		} else if !isEndOfCommand(normalizedInput) {
 			isNewLine = true

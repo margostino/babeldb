@@ -6,7 +6,7 @@ import (
 
 func normalize(input string) string {
 	return common.NewString(input).
-		ToLower().
+		//ToLower().
 		ReplaceAll("\n", " ").
 		ReplaceAll("\r", " ").
 		ReplaceAll(" ; ", ";").

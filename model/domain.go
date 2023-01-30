@@ -11,6 +11,10 @@ type Type int32
 type QueryType int32
 
 const (
+	CreateSource string = "create source"
+)
+
+const (
 	Wildcard              string = "*"
 	TypeField             string = "type"
 	DataField             string = "data"
