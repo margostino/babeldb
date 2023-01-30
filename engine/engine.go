@@ -13,6 +13,8 @@ import (
 	"strings"
 )
 
+const URL_SEPARATOR = "@@@"
+
 type Engine struct {
 	storage *storage.Storage
 	jobs    []*cron.Cron
@@ -122,12 +124,12 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 	if strings.HasPrefix(input, "create source") {
 		parts := common.NewString(input).
 			ReplaceAll("create source", "").
-			ReplaceAll(" from ", "&").
-			ReplaceAll(" when ", "&").
+			ReplaceAll(" from ", URL_SEPARATOR).
+			ReplaceAll(" when ", URL_SEPARATOR).
 			ReplaceAll(";", "").
 			ReplaceAll("'", "").
 			TrimSpace().
-			Split("&").
+			Split(URL_SEPARATOR).
 			Values()
 
 		name := parts[0]
@@ -153,7 +155,7 @@ func (e *Engine) Parse(input string) (*model.Query, error) {
 			stmt.SelectExprs.Format(selectBuffer)
 			stmt.From.Format(sourceBuffer)
 
-			if stmt.Where.Expr != nil {
+			if stmt.Where != nil && stmt.Where.Expr != nil {
 				stmt.Where.Expr.Format(whereBuffer)
 				whereClauses = whereBuffer.String()
 			}

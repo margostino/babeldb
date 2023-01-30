@@ -19,7 +19,8 @@ _“The library will endure; it is the universe. As for us, everything has not b
 - [ ] Define custom data collectors
 - [ ] Semantic subscription
 - [ ] Data discovery
-
+- [ ] Monitoring (404, etc.)
+- [ ] REST API connector
 
 ## Motivation
 

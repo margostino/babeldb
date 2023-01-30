@@ -129,7 +129,7 @@ func (q *Query) InOrderPrint() {
 }
 
 func (q *Query) Match(section *Section) bool {
-	return q.Expression.Match(q.Expression.Root, section)
+	return q.Expression.Root == nil || (q.Expression.Root != nil && q.Expression.Match(q.Expression.Root, section))
 }
 
 func (s *Attributes) Get(key string) string {
