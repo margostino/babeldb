@@ -1,11 +1,25 @@
 package model
 
+import "time"
+
 type Meta struct {
 	Title       string
 	Url         string
 	Description string
 	Twitter     string
 	Locale      string
+	SiteMap     *SiteMap
+}
+
+type SiteMapUrl struct {
+	Loc        string    `xml:"loc"`
+	Lastmod    time.Time `xml:"lastmod"`
+	ChangeFreq string    `xml:"changefreq"`
+	Priority   float32   `xml:"priority"`
+}
+
+type SiteMap struct {
+	Urls []*SiteMapUrl `xml:"url"`
 }
 
 type Section struct {
@@ -20,9 +34,17 @@ type Page struct {
 
 func NewPage() *Page {
 	return &Page{
-		Meta:     &Meta{},
+		Meta:     NewMeta(),
 		Sections: make([]*Section, 0),
 	}
+}
+
+func NewMeta() *Meta {
+	return &Meta{}
+	//	SiteMap: &SiteMap{
+	//		Urls: make([]*SiteMapUrl, 0),
+	//	},
+	//}
 }
 
 func NewSection() *Section {
@@ -45,4 +67,12 @@ func (m *Meta) IsCompleted() bool {
 		m.Twitter != "" &&
 		m.Url != "" &&
 		m.Description != ""
+}
+
+func (m *Meta) AddSitemapUrl(url *SiteMapUrl) {
+	m.SiteMap.Urls = append(m.SiteMap.Urls, url)
+}
+
+func (m *Meta) AddSitemap(sitemap *SiteMap) {
+	m.SiteMap = sitemap
 }

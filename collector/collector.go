@@ -36,7 +36,7 @@ func (c *Collector) Collect() {
 }
 
 func (c *Collector) parse(text string) {
-	extractor := newExtractor()
+	extractor := newExtractor(c.source.Url)
 	tokenizer := html.NewTokenizer(strings.NewReader(text))
 
 	for {
@@ -44,10 +44,11 @@ func (c *Collector) parse(text string) {
 		token := tokenizer.Token()
 
 		extractor.flag(&token)
+		extractor.addSitemap()
+		extractor.addLink(&token)
 		extractor.addMeta(&token)
 		extractor.addText(&token)
 		extractor.addSection(&token)
-		extractor.addLink(c.source.Url, &token)
 
 		if token.Type == html.ErrorToken {
 			c.source.Page = extractor.Page

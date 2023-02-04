@@ -1,14 +1,20 @@
 package collector
 
 import (
+	"encoding/xml"
 	"fmt"
+	"github.com/margostino/babeldb/common"
 	"github.com/margostino/babeldb/model"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
+	"io"
+	"io/ioutil"
+	"net/http"
 	"strings"
 )
 
 type Extractor struct {
+	url        string
 	flags      *Flags
 	attributes *model.Attributes
 	section    *model.Section
@@ -23,14 +29,16 @@ type Flags struct {
 	isSpanToken      bool
 }
 
-func newExtractor() *Extractor {
-	meta := &model.Meta{}
+type SiteMap struct {
+	Index []*model.SiteMapUrl `xml:"sitemap"`
+	Urls  []*model.SiteMapUrl `xml:"url"`
+}
+
+func newExtractor(url string) *Extractor {
 	return &Extractor{
-		flags: &Flags{},
-		Page: &model.Page{
-			Meta:     meta,
-			Sections: make([]*model.Section, 0),
-		},
+		url:     url,
+		flags:   &Flags{},
+		Page:    model.NewPage(),
 		section: newSection(),
 	}
 }
@@ -84,7 +92,45 @@ func (e *Extractor) addMeta(token *html.Token) {
 			}
 		}
 	}
+}
 
+func getSiteMapUrls(baseUrl string) []string {
+	sitemapIndex := make([]string, 0)
+	robotsUrl := fmt.Sprintf("%s/robots.txt", baseUrl)
+	res, err := http.Get(robotsUrl)
+	defer res.Body.Close()
+
+	if !common.IsError(err, "when calling robots URL") {
+		body, err := io.ReadAll(res.Body)
+		if !common.IsError(err, "when reading robots call response") {
+			text := string(body)
+			tokens := strings.Split(text, "\n")
+			for _, token := range tokens {
+				if strings.HasPrefix(token, "Sitemap: ") {
+					sitemapTokens := common.NewString(token).
+						Split(" ").
+						Values()
+					if len(sitemapTokens) == 2 {
+						sitemapIndex = append(sitemapIndex, sitemapTokens[1])
+					}
+				}
+			}
+		}
+	}
+	return sitemapIndex
+}
+
+// TODO: do it async
+func (e *Extractor) addSitemap() {
+	if e.Page.Meta != nil && e.Page.Meta.SiteMap == nil {
+		urls := getSiteMapUrls(e.url)
+
+		sites := make([]*model.SiteMapUrl, 0)
+		appendSites(&sites, urls)
+		e.Page.Meta.SiteMap = &model.SiteMap{
+			Urls: sites,
+		}
+	}
 }
 
 func (e *Extractor) addText(token *html.Token) {
@@ -102,7 +148,8 @@ func (e *Extractor) addText(token *html.Token) {
 	}
 }
 
-func (e *Extractor) addLink(url string, token *html.Token) {
+func (e *Extractor) addLink(token *html.Token) {
+	url := e.url
 	if e.flags.isSectionToken && token.DataAtom == atom.A {
 		href := e.attributes.Get("href")
 		hostname := getHostname(url)
@@ -131,6 +178,28 @@ func (e *Extractor) flag(token *html.Token) {
 	e.attributes = model.NewAttributes(token.Attr)
 	if isStartToken(token) {
 		e.mark(token)
+	}
+}
+
+func appendSites(sites *[]*model.SiteMapUrl, urls []string) {
+	for _, url := range urls {
+		res, err := http.Get(url)
+		if !common.IsError(err, fmt.Sprintf("error when collecting data from %s", url)) {
+			data, err := ioutil.ReadAll(res.Body)
+
+			if !common.IsError(err, fmt.Sprintf("error when parsing response from %s", url)) {
+				var sitemapResp SiteMap
+				xml.Unmarshal(data, &sitemapResp)
+
+				for _, index := range sitemapResp.Index {
+					appendSites(sites, []string{index.Loc})
+				}
+
+				for _, sitemapUrl := range sitemapResp.Urls {
+					*sites = append(*sites, sitemapUrl)
+				}
+			}
+		}
 	}
 }
 

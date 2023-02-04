@@ -28,6 +28,24 @@ func New() *Engine {
 
 }
 
+func (e *Engine) createSource(name string, url string, schedule string) {
+
+	source := &model.Source{
+		Name: name,
+		Url:  url,
+	}
+
+	job := cron.New(cron.WithSeconds())
+	collector := collector.New(source)
+
+	e.jobs = append(e.jobs, job)
+	e.storage.AddSource(source)
+
+	collector.Collect()
+	job.AddFunc(schedule, collector.Collect)
+	job.Start()
+}
+
 func (e *Engine) Parse(input string) (*model.Query, error) {
 	var queryInput string
 	var query *model.Query
@@ -207,22 +225,4 @@ func showPage(fields *common.StringSlice, sections []*model.Section) {
 		}
 		fmt.Println()
 	}
-}
-
-func (e *Engine) createSource(name string, url string, schedule string) {
-
-	source := &model.Source{
-		Name: name,
-		Url:  url,
-	}
-
-	job := cron.New(cron.WithSeconds())
-	collector := collector.New(source)
-
-	e.jobs = append(e.jobs, job)
-	e.storage.AddSource(source)
-
-	collector.Collect()
-	job.AddFunc(schedule, collector.Collect)
-	job.Start()
 }
