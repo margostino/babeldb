@@ -41,10 +41,6 @@ func NewPage() *Page {
 
 func NewMeta() *Meta {
 	return &Meta{}
-	//	SiteMap: &SiteMap{
-	//		Urls: make([]*SiteMapUrl, 0),
-	//	},
-	//}
 }
 
 func NewSection() *Section {
