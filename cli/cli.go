@@ -5,6 +5,7 @@ import (
 	"github.com/c-bata/go-prompt"
 	"github.com/margostino/babeldb/common"
 	"github.com/margostino/babeldb/engine"
+	"github.com/margostino/babeldb/model"
 	"io/ioutil"
 	"log"
 	"os"
@@ -53,9 +54,10 @@ func (cli *Cli) Start() {
 			inputs := strings.Split(fullInput[:len(fullInput)-1], ";")
 
 			for _, input := range inputs {
-				query, err := cli.engine.Parse(input)
+				query, err := cli.parse(input)
 				if !common.IsError(err, "when parsing input") {
-					cli.engine.Solve(query)
+					results := cli.solve(query)
+					print(query, results)
 				}
 			}
 
@@ -64,6 +66,14 @@ func (cli *Cli) Start() {
 		}
 
 	}
+}
+
+func (cli *Cli) parse(input string) (*model.Query, error) {
+	return cli.engine.Parse(input)
+}
+
+func (cli *Cli) solve(query *model.Query) *model.QueryResults {
+	return cli.engine.Solve(query)
 }
 
 func (cli *Cli) isValidCommand(command string) bool {

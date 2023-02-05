@@ -19,15 +19,6 @@ func (s *Storage) AddSource(source *model.Source) {
 	s.sources[source.Name] = source
 }
 
-func GetAttribute(attributes []*model.Attribute, key string) (*model.Attribute, bool) {
-	for _, attribute := range attributes {
-		if attribute.Key == key {
-			return attribute, true
-		}
-	}
-	return nil, false
-}
-
 func (s *Storage) SelectSources(query *model.Query) map[string]*model.Source {
 	// TODO
 	return s.sources

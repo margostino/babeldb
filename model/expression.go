@@ -6,6 +6,26 @@ import (
 	"strings"
 )
 
+type ExpressionTree struct {
+	Root *ExpressionNode
+}
+
+type ExpressionNodeKey struct {
+	Value    string
+	Type     Type
+	Operator Operator
+}
+
+type ExpressionNode struct {
+	Key   *ExpressionNodeKey
+	Left  *ExpressionNode
+	Right *ExpressionNode
+}
+
+func (q *Query) Match(section *Section) bool {
+	return q.Expression.Root == nil || (q.Expression.Root != nil && q.Expression.Match(q.Expression.Root, section))
+}
+
 func (t *ExpressionTree) InOrderPrint(node *ExpressionNode) {
 	if node != nil {
 		t.InOrderPrint(node.Left)
