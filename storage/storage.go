@@ -47,7 +47,7 @@ func (s *Storage) Select(name string, query *model.Query) (*model.Meta, []*model
 
 	if s.sources[name] != nil {
 		source := s.sources[name]
-
+		meta = source.Page.Meta
 		for _, section := range source.Page.Sections {
 			if query.Match(section) {
 				sections = append(sections, section)

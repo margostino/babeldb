@@ -122,7 +122,7 @@ func getSiteMapUrls(baseUrl string) []string {
 
 // TODO: do it async
 func (e *Extractor) addSitemap() {
-	if e.Page.Meta != nil && e.Page.Meta.SiteMap == nil {
+	if e.Page.Meta != nil && len(e.Page.Meta.SiteMap.Sites) == 0 {
 		urls := getSiteMapUrls(e.url)
 
 		sites := make([]*model.SiteMapUrl, 0)

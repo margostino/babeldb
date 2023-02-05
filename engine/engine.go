@@ -212,7 +212,9 @@ func showSources(sources []*model.Source) {
 func showMeta(fields *common.StringSlice, meta *model.Meta) {
 	if meta != nil {
 		fmt.Println()
-		fmt.Println("\n---------------------------")
+		if fields.AnyPrefix(model.SourceMeta) || fields.AnyPrefix(model.SourcePageSitemap) || fields.Contains(model.Wildcard) {
+			fmt.Println("\n---------------------------")
+		}
 		if fields.Contains(model.SourceMetaTitle) || fields.Contains(model.Wildcard) {
 			fmt.Printf("Title:  %s\n", meta.Title)
 		}
@@ -228,7 +230,7 @@ func showMeta(fields *common.StringSlice, meta *model.Meta) {
 		if fields.Contains(model.SourceMetaLocale) || fields.Contains(model.Wildcard) {
 			fmt.Printf("Locale:  %s\n", meta.Locale)
 		}
-		if fields.AnyPrefix(model.SourcePageSitemap) || fields.Contains(model.Wildcard) {
+		if meta.SiteMap != nil && (fields.AnyPrefix(model.SourcePageSitemap) || fields.Contains(model.Wildcard)) {
 			for _, site := range meta.SiteMap.Sites {
 				if fields.Contains(model.SourcePageSitemapUrl) || fields.Contains(model.Wildcard) {
 					fmt.Printf("Sitemap URL:  %s\n", site.Loc)
@@ -241,26 +243,30 @@ func showMeta(fields *common.StringSlice, meta *model.Meta) {
 				}
 			}
 		}
-		fmt.Println("---------------------------")
+		if fields.AnyPrefix(model.SourceMeta) || fields.AnyPrefix(model.SourcePageSitemap) || fields.Contains(model.Wildcard) {
+			fmt.Println("\n---------------------------")
+		}
 		fmt.Println()
 	}
 }
 
 func showSections(fields *common.StringSlice, sections []*model.Section) {
-	if len(sections) == 0 {
-		fmt.Println("no results!")
-	} else {
+	if len(sections) > 0 {
 		// TODO: pretty format
 		fmt.Println()
-		fmt.Println("\n---------------------------")
 		for _, section := range sections {
+			if fields.Contains(model.SourcePageText) || fields.Contains(model.SourcePageLinks) || fields.Contains(model.Wildcard) {
+				fmt.Println("\n---------------------------")
+			}
 			if fields.Contains(model.SourcePageText) || fields.Contains(model.Wildcard) {
 				fmt.Printf("Text:  %s\n", section.Text)
 			}
 			if fields.Contains(model.SourcePageLinks) || fields.Contains(model.Wildcard) {
 				fmt.Printf("Links:  %s\n", section.Links)
 			}
-			fmt.Println("---------------------------")
+			if fields.Contains(model.SourcePageText) || fields.Contains(model.SourcePageLinks) || fields.Contains(model.Wildcard) {
+				fmt.Println("\n---------------------------")
+			}
 		}
 		fmt.Println()
 	}

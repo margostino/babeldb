@@ -24,6 +24,7 @@ const (
 	SourceUrl                   string = "url"
 	SourceTotalSections         string = "total_sections"
 	SourceLastUpdate            string = "last_update"
+	SourceMeta                  string = "meta"
 	SourceMetaTitle             string = "meta_title"
 	SourceMetaDescription       string = "meta_description"
 	SourceMetaTwitter           string = "meta_twitter"
@@ -45,6 +46,7 @@ var Fields = common.NewStringSlice(
 	SourceUrl,
 	SourceTotalSections,
 	SourceLastUpdate,
+	SourceMeta,
 	SourceMetaTitle,
 	SourceMetaDescription,
 	SourceMetaTwitter,
