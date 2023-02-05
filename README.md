@@ -21,6 +21,7 @@ _“The library will endure; it is the universe. As for us, everything has not b
 - [ ] Data discovery
 - [ ] Monitoring (404, etc.)
 - [ ] REST API connector
+- [ ] BabelQL
 
 ## Motivation
 
