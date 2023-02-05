@@ -32,6 +32,7 @@ const (
 	SourcePageLinks       string = "links"
 	SourcePageLink        string = "link"
 	Sources               string = "sources"
+	SourcePageSitemap     string = "sitemap"
 )
 
 var AttributeFields = common.NewStringSlice(HrefField)
@@ -45,6 +46,7 @@ var Fields = common.NewStringSlice(
 	SourceMetaTwitter,
 	SourceMetaLocale,
 	SourcePageText,
+	SourcePageSitemap,
 	SourcePageLinks,
 	SourcePageLink,
 	TypeField,

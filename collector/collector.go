@@ -39,12 +39,12 @@ func (c *Collector) parse(text string) {
 	extractor := newExtractor(c.source.Url)
 	tokenizer := html.NewTokenizer(strings.NewReader(text))
 
+	go extractor.addSitemap()
 	for {
 		_ = tokenizer.Next()
 		token := tokenizer.Token()
 
 		extractor.flag(&token)
-		extractor.addSitemap()
 		extractor.addLink(&token)
 		extractor.addMeta(&token)
 		extractor.addText(&token)

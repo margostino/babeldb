@@ -52,38 +52,6 @@ func (s *Storage) Select(name string, query *model.Query) []*model.Section {
 				sections = append(sections, section)
 			}
 		}
-		//var attribute *model.Attribute
-		//page := s.sources[name].Page
-		//for _, section := range page.Sections {
-		//	data := common.NewString(token.Data).TrimSpace().Value()
-		//	if len(token.Attributes) > 0 {
-		//		newAttribute, _ := GetAttribute(token.Attributes, "href")
-		//		if newAttribute != nil {
-		//			attribute = newAttribute
-		//		}
-		//	}
-		//	if data != "" && data != "\t" {
-		//		match := query.Match(token)
-		//		if match {
-		//			var exists bool
-		//			if query.Distinct {
-		//				for _, result := range results {
-		//					if result.Data == token.Data {
-		//						exists = true
-		//						break
-		//					}
-		//				}
-		//			}
-		//			if !exists {
-		//				if attribute != nil {
-		//					token.Attributes = append(token.Attributes, attribute)
-		//					attribute = nil
-		//				}
-		//				results = append(results, token)
-		//			}
-		//		}
-		//	}
-		//}
 	} else {
 		fmt.Println("source name not found!")
 	}
