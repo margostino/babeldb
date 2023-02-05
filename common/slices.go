@@ -32,3 +32,12 @@ func (s *StringSlice) Contains(value string) bool {
 	}
 	return false
 }
+
+func (s *StringSlice) AnyPrefix(prefix string) bool {
+	for _, element := range s.Values() {
+		if strings.HasPrefix(element, prefix) {
+			return true
+		}
+	}
+	return false
+}

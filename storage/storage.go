@@ -41,8 +41,9 @@ func (s *Storage) Show() []*model.Source {
 	return sources
 }
 
-func (s *Storage) Select(name string, query *model.Query) []*model.Section {
+func (s *Storage) Select(name string, query *model.Query) (*model.Meta, []*model.Section) {
 	sections := make([]*model.Section, 0)
+	meta := &model.Meta{}
 
 	if s.sources[name] != nil {
 		source := s.sources[name]
@@ -52,9 +53,10 @@ func (s *Storage) Select(name string, query *model.Query) []*model.Section {
 				sections = append(sections, section)
 			}
 		}
+
 	} else {
 		fmt.Println("source name not found!")
 	}
 
-	return sections
+	return meta, sections
 }

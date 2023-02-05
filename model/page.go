@@ -19,7 +19,7 @@ type SiteMapUrl struct {
 }
 
 type SiteMap struct {
-	Urls []*SiteMapUrl `xml:"url"`
+	Sites []*SiteMapUrl `xml:"url"`
 }
 
 type Section struct {
@@ -40,7 +40,15 @@ func NewPage() *Page {
 }
 
 func NewMeta() *Meta {
-	return &Meta{}
+	return &Meta{
+		SiteMap: NewSitemap(),
+	}
+}
+
+func NewSitemap() *SiteMap {
+	return &SiteMap{
+		Sites: make([]*SiteMapUrl, 0),
+	}
 }
 
 func NewSection() *Section {
@@ -66,7 +74,7 @@ func (m *Meta) IsCompleted() bool {
 }
 
 func (m *Meta) AddSitemapUrl(url *SiteMapUrl) {
-	m.SiteMap.Urls = append(m.SiteMap.Urls, url)
+	m.SiteMap.Sites = append(m.SiteMap.Sites, url)
 }
 
 func (m *Meta) AddSitemap(sitemap *SiteMap) {

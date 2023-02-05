@@ -15,28 +15,32 @@ const (
 )
 
 const (
-	Wildcard              string = "*"
-	TypeField             string = "type"
-	DataField             string = "data"
-	TokenField            string = "token"
-	HrefField             string = "href"
-	SourceName            string = "name"
-	SourceUrl             string = "url"
-	SourceTotalSections   string = "total_sections"
-	SourceLastUpdate      string = "last_update"
-	SourceMetaTitle       string = "title"
-	SourceMetaDescription string = "description"
-	SourceMetaTwitter     string = "twitter"
-	SourceMetaLocale      string = "locale"
-	SourcePageText        string = "text"
-	SourcePageLinks       string = "links"
-	SourcePageLink        string = "link"
-	Sources               string = "sources"
-	SourcePageSitemap     string = "sitemap"
+	Wildcard                    string = "*"
+	TypeField                   string = "type"
+	DataField                   string = "data"
+	TokenField                  string = "token"
+	HrefField                   string = "href"
+	SourceName                  string = "name"
+	SourceUrl                   string = "url"
+	SourceTotalSections         string = "total_sections"
+	SourceLastUpdate            string = "last_update"
+	SourceMetaTitle             string = "meta_title"
+	SourceMetaDescription       string = "meta_description"
+	SourceMetaTwitter           string = "meta_twitter"
+	SourceMetaUrl               string = "meta_url"
+	SourceMetaLocale            string = "meta_locale"
+	SourcePageText              string = "text"
+	SourcePageLinks             string = "links"
+	SourcePageLink              string = "link"
+	SourcePageSitemap           string = "sitemap"
+	SourcePageSitemapUrl        string = "sitemap_url"
+	SourcePageSitemapLastMod    string = "sitemap_lastmod"
+	SourcePageSitemapChangeFreq string = "sitemap_changefreq"
 )
 
 var AttributeFields = common.NewStringSlice(HrefField)
 var Fields = common.NewStringSlice(
+	Wildcard,
 	SourceName,
 	SourceUrl,
 	SourceTotalSections,
@@ -45,15 +49,18 @@ var Fields = common.NewStringSlice(
 	SourceMetaDescription,
 	SourceMetaTwitter,
 	SourceMetaLocale,
+	SourceMetaUrl,
 	SourcePageText,
-	SourcePageSitemap,
 	SourcePageLinks,
 	SourcePageLink,
 	TypeField,
 	DataField,
 	TokenField,
 	HrefField,
-	Wildcard,
+	SourcePageSitemapUrl,
+	SourcePageSitemapLastMod,
+	SourcePageSitemapChangeFreq,
+	SourcePageSitemap,
 )
 
 const (
@@ -127,6 +134,12 @@ type Attributes struct {
 func NewAttributes(attributes []html.Attribute) *Attributes {
 	return &Attributes{
 		attributes: attributes,
+	}
+}
+
+func NewSource() *Source {
+	return &Source{
+		Page: NewPage(),
 	}
 }
 

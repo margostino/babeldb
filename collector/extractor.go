@@ -128,7 +128,7 @@ func (e *Extractor) addSitemap() {
 		sites := make([]*model.SiteMapUrl, 0)
 		appendSites(&sites, urls)
 		e.Page.Meta.SiteMap = &model.SiteMap{
-			Urls: sites,
+			Sites: sites,
 		}
 	}
 }

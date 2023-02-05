@@ -58,7 +58,7 @@ CREATE SOURCE planet FROM 'https://www.planet.com/pulse/' WHEN '*/5 * * * *';
 
 SHOW sources;
 SELECT text FROM earth WHERE text LIKE '%climate%';
-SELECT sitemap FROM earth;
+SELECT sitemap_url, sitemap_changefreq FROM earth;
 
 
 CREATE SOURCE earth FROM 'https://earth.org/environmental-issues-in-south-america/' WHEN '*/5 * * * *';

@@ -33,6 +33,7 @@ func (e *Engine) createSource(name string, url string, schedule string) {
 	source := &model.Source{
 		Name: name,
 		Url:  url,
+		Page: model.NewPage(),
 	}
 
 	job := cron.New(cron.WithSeconds())
@@ -173,8 +174,9 @@ func (e *Engine) Solve(query *model.Query) {
 	source := query.Source
 	switch query.QueryType {
 	case model.SelectType:
-		sections := e.storage.Select(source, query)
-		showPage(query.Fields, sections)
+		meta, sections := e.storage.Select(source, query)
+		showMeta(query.Fields, meta)
+		showSections(query.Fields, sections)
 	case model.ShowSources:
 		sources := e.storage.Show()
 		showSources(sources)
@@ -207,7 +209,44 @@ func showSources(sources []*model.Source) {
 	}
 }
 
-func showPage(fields *common.StringSlice, sections []*model.Section) {
+func showMeta(fields *common.StringSlice, meta *model.Meta) {
+	if meta != nil {
+		fmt.Println()
+		fmt.Println("\n---------------------------")
+		if fields.Contains(model.SourceMetaTitle) || fields.Contains(model.Wildcard) {
+			fmt.Printf("Title:  %s\n", meta.Title)
+		}
+		if fields.Contains(model.SourceMetaTwitter) || fields.Contains(model.Wildcard) {
+			fmt.Printf("Twitter:  %s\n", meta.Twitter)
+		}
+		if fields.Contains(model.SourceMetaUrl) || fields.Contains(model.Wildcard) {
+			fmt.Printf("Url:  %s\n", meta.Url)
+		}
+		if fields.Contains(model.SourceMetaDescription) || fields.Contains(model.Wildcard) {
+			fmt.Printf("Description:  %s\n", meta.Description)
+		}
+		if fields.Contains(model.SourceMetaLocale) || fields.Contains(model.Wildcard) {
+			fmt.Printf("Locale:  %s\n", meta.Locale)
+		}
+		if fields.AnyPrefix(model.SourcePageSitemap) || fields.Contains(model.Wildcard) {
+			for _, site := range meta.SiteMap.Sites {
+				if fields.Contains(model.SourcePageSitemapUrl) || fields.Contains(model.Wildcard) {
+					fmt.Printf("Sitemap URL:  %s\n", site.Loc)
+				}
+				if fields.Contains(model.SourcePageSitemapLastMod) || fields.Contains(model.Wildcard) {
+					fmt.Printf("Sitemap Last Modified:  %s\n", site.Lastmod)
+				}
+				if fields.Contains(model.SourcePageSitemapChangeFreq) || fields.Contains(model.Wildcard) {
+					fmt.Printf("Sitemap Change frequency:  %s\n", site.ChangeFreq)
+				}
+			}
+		}
+		fmt.Println("---------------------------")
+		fmt.Println()
+	}
+}
+
+func showSections(fields *common.StringSlice, sections []*model.Section) {
 	if len(sections) == 0 {
 		fmt.Println("no results!")
 	} else {
