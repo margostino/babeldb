@@ -12,18 +12,21 @@ import (
 )
 
 type Collector struct {
-	source *model.Source
+	source     *model.Source
+	httpClient *http.Client
 }
 
 func New(source *model.Source) *Collector {
 	return &Collector{
-		source: source,
+		source:     source,
+		httpClient: &http.Client{},
 	}
 }
 
 func (c *Collector) Collect() {
 	url := c.source.Url
-	res, err := http.Get(url)
+	req, _ := http.NewRequest("GET", url, nil)
+	res, err := c.httpClient.Do(req)
 
 	if !common.IsError(err, fmt.Sprintf("error when collecting data from %s", url)) {
 		text, err := ioutil.ReadAll(res.Body)

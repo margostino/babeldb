@@ -53,6 +53,9 @@ SELECT DISTINCT data, href FROM planet WHERE type ='text' AND data LIKE '%earth%
 SELECT DISTINCT data FROM planet WHERE type ='text' AND data LIKE '%earth%' AND data NOT LIKE '%<img%';
 
 CREATE SOURCE earth FROM 'https://earth.org' WHEN '*/5 * * * *';
+CREATE SOURCE earth FROM 'https://earthobservatory.nasa.gov' WHEN '*/5 * * * *';
+CREATE SOURCE fpl FROM 'https://www.livescore.com/en/football/england/premier-league/tottenham-hotspur-vs-manchester-city/702055/?tab=commentary' WHEN '*/5 * * * *';
+CREATE SOURCE sifted FROM 'https://sifted.eu/articles/nordic-tech-in-review-2022' WHEN '*/5 * * * *';
 CREATE SOURCE earth FROM 'https://earth.org' WHEN '@every 20s';
 CREATE SOURCE planet FROM 'https://www.planet.com/pulse/' WHEN '*/5 * * * *';
 CREATE SOURCE planet FROM 'https://www.planet.com' WHEN '*/5 * * * *';
@@ -60,11 +63,13 @@ CREATE SOURCE planet FROM 'https://www.planet.com' WHEN '*/5 * * * *';
 SHOW sources;
 SELECT text FROM earth WHERE text LIKE '%climate%'
 SELECT text FROM planet WHERE text LIKE '%climate%';
+SELECT text FROM sifted;
 SELECT sitemap_url, sitemap_changefreq FROM earth;
 SELECT sitemap_url, sitemap_changefreq FROM planet;
 
 
 CREATE SOURCE earth FROM 'https://earth.org/environmental-issues-in-south-america/' WHEN '*/5 * * * *';
+CREATE SOURCE earth FROM 'https://data.eumetsat.int/extended?query=&filter=eumetsatDataPolicy__Copernicus WHEN '*/5 * * * *';
 
 CREATE SOURCE jobs FROM 'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=software%20engineer&location=sweden&f_TPR=r604800&f_WT=3&start=50' WHEN '*/5 * * * *';
 SELECT * from jobs WHERE text LIKE "%Full stack%";
